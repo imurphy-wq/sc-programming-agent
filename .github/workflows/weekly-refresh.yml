@@ -1,0 +1,35 @@
+name: Weekly Maintenance
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"  # Every Monday at 9am UTC
+  workflow_dispatch:       # Allow manual trigger
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run test suite
+        run: npm test
+
+      - name: Security audit
+        run: npm audit --audit-level=high
+
+      - name: Post summary
+        if: always()
+        run: |
+          echo "## Weekly Maintenance Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Date: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "- Node version: $(node --version)" >> $GITHUB_STEP_SUMMARY
+          echo "- npm version: $(npm --version)" >> $GITHUB_STEP_SUMMARY

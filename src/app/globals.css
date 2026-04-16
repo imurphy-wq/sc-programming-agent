@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Table styling for program display */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.prose th {
+  background-color: #f3f4f6;
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.prose td {
+  padding: 5px 8px;
+  border: 1px solid #e5e7eb;
+  vertical-align: top;
+}
+
+.prose tr:nth-child(even) td {
+  background-color: #fafafa;
+}
+
+/* Pre/code blocks for the program header */
+.prose pre {
+  background: #1f2937;
+  color: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.prose code:not(pre code) {
+  background: #f3f4f6;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
