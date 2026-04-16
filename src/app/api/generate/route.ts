@@ -6,6 +6,7 @@ import type { AthleteFormData } from '@/lib/types'
 
 const ALLOWED_ORIGINS = [
   'https://imurphy-wq.github.io',
+  'https://sc-programming-agent.vercel.app',
   'http://localhost:3000',
   'http://localhost:8080',
 ]
