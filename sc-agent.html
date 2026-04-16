@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S&amp;C Programming Agent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    /* Markdown output styling */
+    #output h2 { font-size: 1.1rem; font-weight: 700; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.4rem; margin: 1.4rem 0 0.6rem; }
+    #output h3 { font-size: 0.95rem; font-weight: 600; color: #374151; margin: 1rem 0 0.4rem; }
+    #output p  { font-size: 0.875rem; color: #374151; margin: 0.5rem 0; line-height: 1.6; }
+    #output ul, #output ol { font-size: 0.875rem; color: #374151; margin: 0.4rem 0 0.4rem 1.2rem; }
+    #output li { margin: 0.2rem 0; }
+    #output strong { font-weight: 600; color: #111827; }
+    #output pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.75rem; margin: 0.75rem 0; }
+    #output code { background: #f1f5f9; color: #0f172a; padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-size: 0.75rem; }
+    #output pre code { background: none; color: inherit; padding: 0; }
+    /* Table styling */
+    #output table { width: 100%; border-collapse: collapse; font-size: 0.72rem; margin: 0.75rem 0; overflow-x: auto; display: block; }
+    #output th { background: #f1f5f9; font-weight: 600; color: #374151; padding: 0.4rem 0.5rem; text-align: left; border: 1px solid #e2e8f0; white-space: nowrap; }
+    #output td { padding: 0.35rem 0.5rem; border: 1px solid #e2e8f0; color: #1e293b; vertical-align: top; }
+    #output tr:nth-child(even) td { background: #f8fafc; }
+    #output hr { border: none; border-top: 1px solid #e5e7eb; margin: 1rem 0; }
+    #output blockquote { border-left: 4px solid #93c5fd; background: #eff6ff; padding: 0.5rem 0.75rem; border-radius: 0 0.25rem 0.25rem 0; font-size: 0.875rem; color: #1e40af; margin: 0.5rem 0; }
+    /* Streaming cursor */
+    .cursor { display: inline-block; width: 2px; height: 1em; background: #2563eb; margin-left: 2px; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen antialiased">
+
+  <!-- CORS warning banner (shown only when opened as file://) -->
+  <div id="cors-banner" class="hidden bg-amber-50 border-b border-amber-200 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex items-start gap-3">
+      <span class="text-amber-500 text-lg">⚠️</span>
+      <div class="text-sm">
+        <p class="font-semibold text-amber-800">Opened as a local file — API calls may be blocked by your browser.</p>
+        <p class="text-amber-700 mt-0.5">Serve with a local server to avoid CORS issues. In Terminal:</p>
+        <code class="mt-1 inline-block bg-amber-100 text-amber-900 px-2 py-1 rounded text-xs font-mono">cd "/Users/iainmurphy/Code/S&C Model" &amp;&amp; python3 -m http.server 8080</code>
+        <span class="text-amber-700"> then open </span>
+        <code class="bg-amber-100 text-amber-900 px-1 py-0.5 rounded text-xs font-mono">http://localhost:8080/sc-agent.html</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-5">
+      <div class="flex flex-wrap items-baseline gap-3 justify-between">
+        <div>
+          <div class="flex items-baseline gap-3">
+            <h1 class="text-2xl font-black text-gray-900 tracking-tight">S&amp;C Programming Agent</h1>
+            <span class="text-sm text-gray-500 font-medium">College Athlete Program Generator</span>
+          </div>
+          <p class="text-sm text-gray-500 mt-1">Describe what you want for your athlete → get a complete periodized program in your format.</p>
+        </div>
+        <!-- API Key -->
+        <div class="flex items-center gap-2 mt-2">
+          <label class="text-xs font-semibold text-gray-500 whitespace-nowrap">API Key</label>
+          <input id="api-key-input" type="password" placeholder="sk-ant-..." autocomplete="off"
+            class="text-xs border border-gray-300 rounded px-2 py-1.5 w-52 focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none font-mono" />
+          <button onclick="saveApiKey()" class="text-xs text-blue-600 border border-blue-300 rounded px-2 py-1.5 hover:bg-blue-50 transition whitespace-nowrap">Save</button>
+          <span id="key-saved" class="text-xs text-green-600 hidden">✓ Saved</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+      <!-- ── FORM ── -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+        <h2 class="text-base font-bold text-gray-900">Athlete Intake</h2>
+
+        <!-- Outcome -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Outcome Goal <span class="text-red-500">*</span></label>
+          <textarea id="f-outcome" rows="3" placeholder='e.g. "I need him stronger off the line by fall camp. He's slow off the ball and gets pushed around."'
+            class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none resize-none"></textarea>
+        </div>
+
+        <!-- Sport & Schedule row -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Sport <span class="text-red-500">*</span></label>
+            <select id="f-sport" onchange="updatePositions()"
+              class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none bg-white">
+              <option value="">Select sport...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Position <span class="text-red-500">*</span></label>
+            <select id="f-position"
+              class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none bg-white">
+              <option value="">Select sport first</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Season Phase <span class="text-red-500">*</span></label>
+            <select id="f-season" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none bg-white">
+              <option value="off-season">Off-Season</option>
+              <option value="pre-season">Pre-Season</option>
+              <option value="in-season">In-Season</option>
+              <option value="post-season">Post-Season</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Training Days / Week <span class="text-red-500">*</span></label>
+            <select id="f-days" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none bg-white">
+              <option value="2">2 days</option>
+              <option value="3">3 days</option>
+              <option value="4" selected>4 days</option>
+              <option value="5">5 days</option>
+              <option value="6">6 days</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Athlete profile -->
+        <div class="border-t border-gray-100 pt-4">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Athlete Profile</p>
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Height (ft) <span class="text-red-500">*</span></label>
+              <input id="f-ht-ft" type="number" min="4" max="8" placeholder="6"
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Height (in) <span class="text-red-500">*</span></label>
+              <input id="f-ht-in" type="number" min="0" max="11" placeholder="2"
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Body Weight (lbs) <span class="text-red-500">*</span></label>
+              <input id="f-bw" type="number" min="60" max="500" placeholder="190"
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none" />
+            </div>
+          </div>
+          <div class="mt-3">
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Training Age</label>
+            <select id="f-training-age" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none bg-white">
+              <option value="">Not specified</option>
+              <option value="novice">Novice (0–1 year structured training)</option>
+              <option value="intermediate">Intermediate (1–3 years)</option>
+              <option value="advanced">Advanced (3+ years consistent, programmatic)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Testing maxes -->
+        <div class="border-t border-gray-100 pt-4">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Testing Maxes <span class="text-gray-400 font-normal normal-case">(leave blank if untested)</span></p>
+          <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-600 w-24 shrink-0">Squat (lbs)</label>
+              <input id="m-squat" type="number" min="0" max="2000" placeholder="—"
+                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-600 w-24 shrink-0">Deadlift (lbs)</label>
+              <input id="m-dl" type="number" min="0" max="2000" placeholder="—"
+                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-600 w-24 shrink-0">Bench (lbs)</label>
+              <input id="m-bench" type="number" min="0" max="2000" placeholder="—"
+                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-600 w-24 shrink-0">Clean (lbs)</label>
+              <input id="m-clean" type="number" min="0" max="2000" placeholder="—"
+                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-600 w-24 shrink-0">Vert (inches)</label>
+              <input id="m-vert" type="number" min="0" max="60" step="0.5" placeholder="—"
+                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-600 w-24 shrink-0">10-yd (sec)</label>
+              <input id="m-10yd" type="number" min="0" max="10" step="0.01" placeholder="—"
+                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
+            </div>
+            <div class="flex items-center gap-2 col-span-2">
+              <label class="text-xs text-gray-600 w-24 shrink-0">Pull-ups (max)</label>
+              <input id="m-pullups" type="number" min="0" max="100" placeholder="—"
+                class="w-32 text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Context & constraints -->
+        <div class="border-t border-gray-100 pt-4">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Context &amp; Constraints <span class="text-gray-400 font-normal normal-case">(optional)</span></p>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Injury History / Current Limitations</label>
+              <textarea id="f-injury" rows="2" placeholder="e.g. ACL reconstruction left knee (18 months post-op, cleared). Prior shoulder labrum issue."
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none resize-none"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Practice / Competition Schedule</label>
+              <textarea id="f-practice" rows="2" placeholder="e.g. Practice Mon/Wed/Fri 2 hrs. Games Saturday. Conference tournament last 3 weeks."
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none resize-none"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Equipment Constraints</label>
+              <textarea id="f-equipment" rows="2" placeholder="e.g. No power rack — only dumbbells and cable machines available."
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none resize-none"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Additional Notes</label>
+              <textarea id="f-notes" rows="2" placeholder="e.g. Athlete prefers morning sessions. Has limited ankle dorsiflexion — avoid deep squat variations."
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none resize-none"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error display -->
+        <div id="form-error" class="hidden bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700"></div>
+
+        <!-- Submit -->
+        <button id="generate-btn" onclick="generateProgram()"
+          class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm py-2.5 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span id="btn-text">Generate Program</span>
+        </button>
+      </div>
+
+      <!-- ── OUTPUT ── -->
+      <div class="lg:sticky lg:top-8">
+        <!-- Loading state -->
+        <div id="loading-state" class="hidden bg-white rounded-xl border border-gray-200 p-8 text-center">
+          <div class="flex flex-col items-center gap-3">
+            <div class="w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin" style="border-width:3px"></div>
+            <p class="text-sm text-gray-600 font-medium">Building your program...</p>
+            <p class="text-xs text-gray-400">This takes 15–40 seconds. Program will stream in as it generates.</p>
+          </div>
+        </div>
+
+        <!-- Error state -->
+        <div id="output-error" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+          <p class="text-red-700 text-sm font-medium">Error</p>
+          <p id="output-error-msg" class="text-red-600 text-sm mt-1"></p>
+        </div>
+
+        <!-- Program output -->
+        <div id="output-panel" class="hidden">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-bold text-gray-900">Generated Program</h2>
+              <span id="streaming-badge" class="hidden text-xs text-blue-600 font-medium animate-pulse">● Generating...</span>
+            </div>
+            <button id="download-btn" onclick="downloadProgram()" class="hidden text-xs text-gray-600 border border-gray-300 rounded px-3 py-1 hover:bg-gray-50 transition">
+              Download .md
+            </button>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-xl p-5 overflow-x-auto">
+            <div id="output"></div>
+            <span id="cursor" class="cursor hidden"></span>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-state" class="bg-white rounded-xl border border-gray-200 p-8 text-center">
+          <div class="text-4xl mb-3">🏋️</div>
+          <p class="text-gray-500 text-sm">Fill out the form and click <strong>Generate Program</strong> to get a complete periodized training program.</p>
+          <p class="text-gray-400 text-xs mt-2">Programs match your established template: 4-week blocks, Day 1–4 split, superset grouping, progressive loading.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+// ─── Sports config ────────────────────────────────────────────────────────────
+const SPORTS = {
+  'football':       { label: 'Football (American)', positions: ['QB','RB','FB','WR','TE','OL (Guard/Tackle)','OL (Center)','DL (DT)','DL (DE)','LB (ILB)','LB (OLB)','CB','Safety','K/P','ATH'] },
+  'soccer-m':       { label: "Soccer (Men's)",       positions: ['GK','CB','LB/RB','CDM','CM','CAM','LW/RW','ST'] },
+  'soccer-w':       { label: "Soccer (Women's)",     positions: ['GK','CB','LB/RB','CDM','CM','CAM','LW/RW','ST'] },
+  'lacrosse-m':     { label: "Lacrosse (Men's)",     positions: ['GK','Defense','LSM (Long Stick Midfield)','Midfield','Attack','ATH'] },
+  'lacrosse-w':     { label: "Lacrosse (Women's)",   positions: ['GK','Defense','Midfield','Attack','ATH'] },
+  'field-hockey':   { label: 'Field Hockey',         positions: ['GK','Defense','Midfield','Forward'] },
+  'rugby':          { label: 'Rugby',                positions: ['Prop','Hooker','Lock','Flanker','No. 8','Scrum-half','Fly-half','Center','Wing','Fullback'] },
+  'basketball-m':   { label: "Basketball (Men's)",   positions: ['PG','SG','SF','PF','C'] },
+  'basketball-w':   { label: "Basketball (Women's)", positions: ['PG','SG','SF','PF','C'] },
+  'volleyball':     { label: 'Volleyball',           positions: ['Setter','Middle Blocker','Outside Hitter','Opposite Hitter','Libero','Defensive Specialist'] },
+  'tennis':         { label: 'Tennis',               positions: ['Singles','Doubles','Both'] },
+  'baseball':       { label: 'Baseball',             positions: ['SP (Starting Pitcher)','RP/Closer','Catcher','1B','2B','3B','SS','OF','DH/Utility'] },
+  'softball':       { label: 'Softball',             positions: ['SP (Starting Pitcher)','Relief Pitcher','Catcher','1B','2B','3B','SS','OF','DP/Utility'] },
+  'wrestling':      { label: 'Wrestling',            positions: ['125 lbs','133 lbs','141 lbs','149 lbs','157 lbs','165 lbs','174 lbs','184 lbs','197 lbs','285 lbs (HWT)'] },
+  'swimming':       { label: 'Swimming',             positions: ['Sprint Freestyle (50/100)','Mid Free (200)','Distance Free (500/1000/1650)','Backstroke','Breaststroke','Butterfly','Individual Medley'] },
+  'rowing':         { label: 'Rowing',               positions: ['Sweep (8+)','Sweep (4+)','Scull (1x)','Scull (2x/4x)','Coxswain'] },
+  'cross-country':  { label: 'Cross Country',        positions: ['Top 7 (Scoring)','Non-scoring','General'] },
+  'track-sprint':   { label: 'Track – Sprints/Hurdles', positions: ['100m/200m','400m','110m/100m Hurdles','400m Hurdles','4x1/4x4 Relay'] },
+  'track-mid':      { label: 'Track – Mid/Distance', positions: ['800m','1500m/Mile','5000m','10000m','Steeplechase'] },
+  'track-jumps':    { label: 'Track – Jumps',        positions: ['High Jump','Long Jump','Triple Jump','Pole Vault'] },
+  'track-throws':   { label: 'Track – Throws',       positions: ['Shot Put','Discus','Javelin','Hammer','Weight Throw'] },
+  'track-combined': { label: 'Track – Combined Events', positions: ['Heptathlon','Decathlon','Pentathlon'] },
+  'gymnastics-w':   { label: "Gymnastics (Women's)", positions: ['All-Around','Vault Specialist','Uneven Bars Specialist','Balance Beam Specialist','Floor Specialist'] },
+  'gymnastics-m':   { label: "Gymnastics (Men's)",   positions: ['All-Around','Floor Specialist','Pommel Horse Specialist','Still Rings Specialist','Vault Specialist','Parallel Bars Specialist','High Bar Specialist'] },
+  'golf':           { label: 'Golf',                 positions: ['General (All)'] },
+  'ice-hockey':     { label: 'Ice Hockey',           positions: ['Goalie','Defense','Left Wing','Center','Right Wing'] },
+  'other':          { label: 'Other (specify in notes)', positions: ['General'] },
+}
+
+// ─── System prompt ────────────────────────────────────────────────────────────
+const SYSTEM_PROMPT = `You are an expert collegiate strength and conditioning coach with the knowledge and programming philosophy of a top-tier college S&C coordinator. You have deep expertise across all college sports and write periodized training programs that coaches trust and use.
+
+## YOUR PROGRAMMING PHILOSOPHY
+
+You program based on these core principles:
+- 4-week mesocycles with progressive overload week to week
+- Block periodization: Block 1 = Introduction/Accumulation, Block 2 = Intensification/Strength, Block 3 = Power/Speed/Competition Prep
+- 4-day split (standard): Day 1 Lower Strength | Day 2 Upper | Day 3 Lower Power | Day 4 Upper + Conditioning
+- Superset grouping: Primary lifts (1, 2), Accessory circuits (3A/3B/3C, 4A/4B/4C)
+- Speed and COD work before lifting on lower body days for field/court/invasion sports
+- Progressive load notes embedded in the program (ADD 5%, ADD 10%, add if able)
+- "When reps stay the same each week, weights need to go up."
+
+## CRITICAL OUTPUT FORMAT — NEVER DEVIATE
+
+Output programs in exactly this structure. This is non-negotiable:
+
+\`\`\`
+═══════════════════════════════════════════════════════════════
+PROGRAM: [SPORT] | Season: [SEASON] | Block [N] Phase [N]
+Athlete Type: [Intro-Returner / Returner / Freshman / etc.]
+Test Maxes: Squat: [#] lbs | Bench: [#] lbs | Clean: [#] lbs | Trap DL: [#] lbs | Vert: [#]" | 10yd: [#]s | Pull-ups: [#]
+═══════════════════════════════════════════════════════════════
+
+## REASONING
+[2–4 paragraphs. Explain: periodization model selected and why. Sport/position specific rationale.
+Key programming decisions and their basis. What each phase achieves. Coach-to-coach language.]
+
+## RED FLAGS / CAVEATS
+[Bullet list. Sport-specific contraindications. Injury-based exercise modifications and why.
+Any situations requiring sports medicine review. If none: "No significant red flags for this profile."]
+
+───────────────────────────────────────────────────────────────
+## DAILY PRE-LIFT (ALL DAYS)
+Foam Roll: Glutes / Hamstrings / Calves / Lower Back / Lats — 8 passes each
+Static Stretch: Hamstring / Hip Flexor / Calves — 20 sec each
+Dynamic Warmup: [Sport-specific: Scoops, Knee Pulls, Fig. 4s, Lat Lunges, Open/Close Gate, A-skip, etc.]
+───────────────────────────────────────────────────────────────
+
+## DAY 1 — [FOCUS e.g. Lower Body: Strength]
+
+**Speed / COD** *(field, court, invasion sports)*
+- Drill Name: sets × distance — rest protocol
+- Drill Name: sets × 1 — rest protocol
+
+| # | EXERCISE | WK1 % | WK1 SETS×REPS | WK1 WT NOTE | WK2 % | WK2 SETS×REPS | WK2 WT NOTE | WK3 % | WK3 SETS×REPS | WK3 WT NOTE | WK4 % | WK4 SETS×REPS | WK4 WT NOTE | COACHING NOTE |
+|---|----------|-------|--------------|------------|-------|--------------|------------|-------|--------------|------------|-------|--------------|------------|--------------|
+| 1 | Trap Bar Deadlift | — | 4×6 | | — | 4×6 | ADD 5% | — | 4×5 | ADD 10% | — | 4×5 | ADD 10% | Drive floor away |
+| 2 | Front Squat | — | 4×8 | start light | — | 4×8 | | — | 4×6 | add weight | — | 4×6 | add if able | Elbows HIGH |
+| 3A | DB Rev Lunge | — | 3×8 e. | | — | 3×8 e. | | — | 3×8 e. | | — | 3×8 e. | | |
+| 3B | Glute Bridge Hold | — | 3×:30s | Bar | — | 3×:35s | 65 lbs | — | 3×:40s | 75 lbs | — | 3×:45s | 85 lbs | |
+| 3C | Hollow Hold | — | 2×:20s | | — | 2×:20s | | — | 2×:20s | | — | 2×:20s | | |
+| 4A | BB RDL | — | 3×8 | | — | 3×10 | | — | 4×8 | | — | 4×10 | | |
+| 4B | Side Plank w/ Hip Lift | — | 3×:20s e. | | — | 3×:25s e. | | — | 3×:30s e. | | — | 3×:35s e. | | |
+| 4C | Hanging Leg Raises | — | 3×12 | | — | 3×12 | | — | 3×12 | | — | 4×12 | | |
+
+## DAY 2 — [FOCUS e.g. Upper Body]
+
+**Day-specific warmup additions:**
+- Band Pull Aparts: 1×10
+- Push-up to T: 1×10
+- Medball Chest Pass: 1×10
+
+| # | EXERCISE | WK1 % | WK1 SETS×REPS | WK1 WT NOTE | WK2 % | WK2 SETS×REPS | WK2 WT NOTE | WK3 % | WK3 SETS×REPS | WK3 WT NOTE | WK4 % | WK4 SETS×REPS | WK4 WT NOTE | COACHING NOTE |
+|---|----------|-------|--------------|------------|-------|--------------|------------|-------|--------------|------------|-------|--------------|------------|--------------|
+| 1 | Bench Press | — | 4×8 | start light | — | 4×8 | add 5 lbs | — | 4×6 | add 5–10 more | — | 4×6 | add if able | |
+| 2 | Pull-ups | — | 4×6 | can use machine | — | 4×6 | go heavier | — | 4×7 | | — | 4×8 | | |
+
+[Continue for DAY 3 and DAY 4 in the same format]
+\`\`\`
+
+## FORMATTING RULES — ABSOLUTE REQUIREMENTS
+
+1. **% column**: Use actual % of 1RM when maxes are entered. Use "—" in Phase 1 / intro blocks before maxes are established.
+2. **"e." suffix**: ALWAYS append to unilateral prescriptions. "3×8 e." = each leg or each arm.
+3. **Superset groups**: 3A/3B/3C and 4A/4B/4C are completed as circuits. Number prefix defines the group.
+4. **Load notes in WT NOTE column**: "ADD 5%", "ADD 10%", "add if able", "start light", actual weight targets (e.g., "Bar", "65 lbs")
+5. **Exercise complexity progressions**: Exercises may evolve within the block (e.g., Goblet Squat in Wk 1-2 → Front Squat Wk 3-4). Show progression in the exercise name column or as a note.
+6. **Coaching notes**: Short, imperative. Use uppercase for key cues: "get HIGH", "ELBOWS UP", "walk back is rest", "FULL REST".
+7. **Day-specific warmup additions**: Layer additional warmup on top of standard daily pre-lift for upper body days (Band Pull Aparts, Push-up to T, Medball variations) and for days with special emphasis.
+8. **Always: Reasoning → Red Flags → Daily Pre-Lift → Days**. This order is mandatory.
+9. **No false precision**: Rest periods as ranges (90–120 sec). % as clean integers or "—".
+10. **Training age note at bottom**: If novice, add a note: "NOTE: Program complexity and load progression are conservative — movement quality is the priority this block."
+
+## SPORT-SPECIFIC PROGRAMMING RULES
+
+### Field/Invasion Sports (Football, Soccer, Lacrosse, Field Hockey, Rugby, Ice Hockey)
+- ALWAYS include Speed/COD section before lifting on Day 1 and Day 3
+- Football **linemen** (OL, DL): bilateral emphasis (trap bar DL, squat, hip thrust dominate); include neck training as 4C on at least one day; avoid programming single-leg work as the primary lower body stimulus (it's accessory only)
+- Football **skill positions** (WR, DB, RB): reactive power, lateral quickness, relative strength emphasis
+- Soccer/Lacrosse: posterior chain priority (RDL, Nordic curl variations, hip thrust); include deceleration emphasis in accessory work; never skip pulling work
+- All field sports: program Nordic curl or leg curl variation at minimum once per week
+
+### Court Sports (Basketball, Volleyball, Tennis)
+- Long seasons — in-season = explicit maintenance protocol; state "IN-SEASON MAINTENANCE" in header
+- Volleyball **Middle Blockers**: In-season — flag patellar tendinopathy risk; reduce eccentric quad loading; no heavy slow-resistance quad work in-season; fast-SSC plyometrics in off-season only
+- Basketball: Reactive power, deceleration, lateral quickness emphasis; not long-distance aerobic conditioning
+
+### Baseball/Softball — Pitching Athletes (SP)
+- **IN-SEASON: ABSOLUTELY NO heavy bilateral overhead pressing** (barbell bench press at high volume, barbell military press). Substitute horizontal pressing with DB Floor Press or light cable work only.
+- MANDATORY: Posterior shoulder health work every upper body day (Face Pulls, Band ER, Y/T/W, prone work)
+- In Reasoning: acknowledge cumulative throwing load as the dominant upper extremity stressor
+- In Red Flags: always flag pitching load interaction with any upper body programming
+- Thoracic mobility and scapular stability featured in warmup for all pitching athletes
+
+### Baseball/Softball — Position Players
+- Standard programming applies with rotational core emphasis
+- Oblique strain risk: program anti-rotation core work (Pallof Press, landmine variations)
+
+### Endurance Athletes (Cross Country, Track Distance, Swimming, Rowing)
+- Minimal hypertrophy; maximize neural adaptation (low volume, heavy load, explosive intent)
+- 2 sessions/week max strength; minimize volume (2–3 working sets per exercise, 3–5 exercises per session)
+- Never program high-volume eccentric quad work for runners (adds recovery burden without performance transfer)
+- In Reasoning: always acknowledge concurrent training interference; explain why the programming minimizes it
+
+### Weight Class / Combat Sports (Wrestling, etc.)
+- Always ask/acknowledge cutting weight status in Red Flags section
+- During active cut week: reduce intensity, acknowledge dehydration impairment of performance
+- Program grip strength and isometric training as targeted sport-specific work (it transfers directly)
+
+### Aesthetic/Judged Sports (Gymnastics, Diving, Skating)
+- NEVER reference body composition targets, weight, cutting, or appearance
+- Frame ALL goals in performance terms: jump height, strength-to-bodyweight ratio, relative strength expression
+- RED-S flag MANDATORY for all female gymnasts and aesthetic sport female athletes
+- S&C role is maintenance and injury prevention; high skill training volume limits strength volume severely
+
+### Power/Track (Sprints, Jumps, Throws)
+- Sprint/jump athletes: MINIMIZE hypertrophy; prioritize RFD and bar velocity
+- Low-load, high-velocity work dominates competition preparation phase
+- Throwers: bilateral strength and power; acknowledge in Reasoning that technical skill interaction requires event coach coordination
+
+## PERIODIZATION SELECTION LOGIC
+
+### Off-Season (multiple blocks, most time to develop)
+- Block 1: Introduction/Accumulation — higher volume, moderate intensity, movement quality and tissue tolerance development
+- Block 2: Intensification/Strength — increased intensity, volume reduction, strength expression
+- Block 3: Power/Speed Conversion — reduced volume, high intensity, speed-strength expression, competition prep
+- Use DUP or block periodization; full 4-day split if days allow
+
+### Pre-Season (4–8 weeks before first competition)
+- Realization/power phase — volume reduced, intensity high, sport-specific power emphasis
+- Begin tapering approach for competition
+- Conditioning emphasis increases
+
+### In-Season (during competition period)
+- Maintenance: 1–2 sessions/week; preserve intensity (≥70–80% 1RM); volume reduced 30–50% vs. off-season
+- CRITICAL: Schedule around competition — never heavy loading 24–48 hours before games
+- In Reasoning: explicitly acknowledge game/practice load as training stimulus
+- Day 4 becomes primarily conditioning when lifting is reduced
+
+### Post-Season (1–3 weeks)
+- Active recovery; general conditioning; movement quality restoration
+- Not a training block — a physical and mental transition period
+- Low intensity, no testing, no max effort work
+
+## TRAINING AGE RULES
+
+### Novice (0–1 year structured training)
+- Do NOT use advanced intensification techniques
+- Conservative volume; movement quality before load
+- Simple progressions: "add weight when all reps are clean"
+- Do NOT prescribe complex periodized blocks; keep exercise selection to 4–6 foundational movements per day
+- Add note at program end: "COACH NOTE: This is a foundation-building block. Movement quality takes priority over load. Do not advance weights if technique degrades."
+
+### Intermediate (1–3 years consistent, programmatic training)
+- LP or DUP appropriate; moderate complexity
+- % prescriptions when maxes are established
+- Exercise progressions within blocks appropriate
+
+### Advanced (3+ years consistent, programmatic training)
+- Block periodization, conjugate elements appropriate
+- Full % prescriptions; complex loading schemes
+- More frequent intensity variation within the week
+
+## SAFETY RULES — NON-NEGOTIABLE
+
+1. **Return-to-play**: ALWAYS defer to sports medicine. If asked for RTP programming, state: "Return-to-play decisions and progressive loading of injured structures require sports medicine clearance and functional assessment criteria. I've programmed the unaffected limbs and cleared movements. Loading of [injured structure] must be directed by your athletic trainer and physician."
+
+2. **No medical recommendations or diagnoses**.
+
+3. **No body composition prescriptions** — no weight targets, no cutting protocols, no caloric advice.
+
+4. **Injury-based modifications**: When injury history significantly affects exercise selection, ALWAYS explain the substitution in the Red Flags section. Never substitute silently.
+
+5. **Uncertainty disclosure**: If the sport/position combination is unusual or unclear, state: "I have limited specific data for [sport/position]. I've applied the [analogous sport] profile — please review for sport-specific accuracy."
+
+6. **Reasoning section is mandatory**: Even for straightforward programs. The coach must be able to evaluate your choices. A program without reasoning cannot be trusted.
+
+Remember: You are writing programs for real athletes. Be conservative when uncertain. Flag rather than fabricate. A good program with visible reasoning beats a sophisticated program with hidden logic.`
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let fullText = ''
+let isStreaming = false
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+;(function init() {
+  // Show CORS banner if opened as file://
+  if (location.protocol === 'file:') {
+    document.getElementById('cors-banner').classList.remove('hidden')
+  }
+
+  // Restore API key
+  const saved = localStorage.getItem('sc_api_key')
+  if (saved) document.getElementById('api-key-input').value = saved
+
+  // Populate sports dropdown
+  const sportSel = document.getElementById('f-sport')
+  Object.entries(SPORTS).forEach(([key, cfg]) => {
+    const opt = document.createElement('option')
+    opt.value = key
+    opt.textContent = cfg.label
+    sportSel.appendChild(opt)
+  })
+
+  // Configure marked for GFM tables
+  marked.use({ gfm: true, breaks: false })
+})()
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim()
+  if (key) {
+    localStorage.setItem('sc_api_key', key)
+    const saved = document.getElementById('key-saved')
+    saved.classList.remove('hidden')
+    setTimeout(() => saved.classList.add('hidden'), 2000)
+  }
+}
+
+function updatePositions() {
+  const sportKey = document.getElementById('f-sport').value
+  const posSel = document.getElementById('f-position')
+  posSel.innerHTML = ''
+  if (!sportKey || !SPORTS[sportKey]) {
+    posSel.innerHTML = '<option value="">Select sport first</option>'
+    return
+  }
+  SPORTS[sportKey].positions.forEach(pos => {
+    const opt = document.createElement('option')
+    opt.value = pos
+    opt.textContent = pos
+    posSel.appendChild(opt)
+  })
+}
+
+function buildUserMessage() {
+  const sport = SPORTS[document.getElementById('f-sport').value]?.label || document.getElementById('f-sport').value
+  const pos = document.getElementById('f-position').value
+  const season = document.getElementById('f-season').value
+  const days = document.getElementById('f-days').value
+  const htFt = document.getElementById('f-ht-ft').value
+  const htIn = document.getElementById('f-ht-in').value
+  const bw = document.getElementById('f-bw').value
+  const ta = document.getElementById('f-training-age').value
+  const outcome = document.getElementById('f-outcome').value.trim()
+
+  const m = {
+    squat: document.getElementById('m-squat').value,
+    dl: document.getElementById('m-dl').value,
+    bench: document.getElementById('m-bench').value,
+    clean: document.getElementById('m-clean').value,
+    vert: document.getElementById('m-vert').value,
+    tenYd: document.getElementById('m-10yd').value,
+    pullups: document.getElementById('m-pullups').value,
+  }
+
+  const injury = document.getElementById('f-injury').value.trim()
+  const practice = document.getElementById('f-practice').value.trim()
+  const equipment = document.getElementById('f-equipment').value.trim()
+  const notes = document.getElementById('f-notes').value.trim()
+
+  return `Write a complete periodized training program for the following athlete.
+
+SPORT: ${sport}
+POSITION: ${pos}
+SEASON PHASE: ${season}
+TRAINING DAYS AVAILABLE PER WEEK: ${days}
+
+ATHLETE PROFILE:
+Height: ${htFt}'${htIn}"
+Body Weight: ${bw} lbs
+Training Age: ${ta || 'not specified — assess from context and be conservative'}
+
+TESTING MAXES:
+${m.squat ? `Back/Front Squat 1RM: ${m.squat} lbs` : 'Squat: untested'}
+${m.dl ? `Deadlift/Trap Bar DL 1RM: ${m.dl} lbs` : 'Deadlift: untested'}
+${m.bench ? `Bench Press 1RM: ${m.bench} lbs` : 'Bench: untested'}
+${m.clean ? `Power Clean 1RM: ${m.clean} lbs` : 'Clean: untested'}
+${m.vert ? `Vertical Jump: ${m.vert}"` : 'Vert: untested'}
+${m.tenYd ? `10-yard dash: ${m.tenYd}s` : '10yd: untested'}
+${m.pullups ? `Pull-ups (max): ${m.pullups}` : 'Pull-ups: untested'}
+
+COACH'S OUTCOME GOAL:
+${outcome}
+${injury ? `\nINJURY HISTORY / CURRENT LIMITATIONS:\n${injury}` : ''}
+${practice ? `\nPRACTICE / COMPETITION SCHEDULE:\n${practice}` : ''}
+${equipment ? `\nEQUIPMENT CONSTRAINTS:\n${equipment}` : ''}
+${notes ? `\nADDITIONAL CONTEXT:\n${notes}` : ''}
+
+Generate the complete 4-week program now in the required format. Begin with Reasoning, then Red Flags, then the program tables.`
+}
+
+function validate() {
+  const errors = []
+  if (!document.getElementById('f-outcome').value.trim() || document.getElementById('f-outcome').value.trim().length < 10)
+    errors.push('Outcome goal must be at least 10 characters.')
+  if (!document.getElementById('f-sport').value) errors.push('Sport is required.')
+  if (!document.getElementById('f-position').value) errors.push('Position is required.')
+  if (!document.getElementById('f-ht-ft').value) errors.push('Height (ft) is required.')
+  if (!document.getElementById('f-bw').value) errors.push('Body weight is required.')
+  return errors
+}
+
+function setUIState(state) {
+  // states: idle | loading | streaming | done | error
+  document.getElementById('loading-state').classList.toggle('hidden', state !== 'loading')
+  document.getElementById('empty-state').classList.toggle('hidden', state !== 'idle')
+  document.getElementById('output-panel').classList.toggle('hidden', state === 'idle' || state === 'loading')
+  document.getElementById('streaming-badge').classList.toggle('hidden', state !== 'streaming')
+  document.getElementById('cursor').classList.toggle('hidden', state !== 'streaming')
+  document.getElementById('download-btn').classList.toggle('hidden', state !== 'done')
+  document.getElementById('output-error').classList.toggle('hidden', state !== 'error')
+
+  const btn = document.getElementById('generate-btn')
+  const btnText = document.getElementById('btn-text')
+  if (state === 'loading' || state === 'streaming') {
+    btn.disabled = true
+    btnText.textContent = state === 'loading' ? 'Connecting...' : 'Generating...'
+  } else {
+    btn.disabled = false
+    btnText.textContent = 'Generate Program'
+  }
+}
+
+function showFormError(msg) {
+  const el = document.getElementById('form-error')
+  el.textContent = msg
+  el.classList.remove('hidden')
+  setTimeout(() => el.classList.add('hidden'), 5000)
+}
+
+async function generateProgram() {
+  if (isStreaming) return
+
+  const errors = validate()
+  if (errors.length) { showFormError(errors.join(' ')); return }
+
+  const apiKey = document.getElementById('api-key-input').value.trim()
+  if (!apiKey) { showFormError('Please enter your Anthropic API key above.'); return }
+
+  isStreaming = true
+  fullText = ''
+  document.getElementById('output').innerHTML = ''
+  document.getElementById('output-error-msg').textContent = ''
+  setUIState('loading')
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-browser': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4096,
+        stream: true,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: buildUserMessage() }],
+      }),
+    })
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}))
+      const msg = errData?.error?.message || `API error ${response.status}`
+      throw new Error(msg)
+    }
+
+    setUIState('streaming')
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() ?? ''
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue
+        const data = line.slice(6).trim()
+        if (data === '[DONE]') continue
+        try {
+          const event = JSON.parse(data)
+          if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+            fullText += event.delta.text
+            document.getElementById('output').innerHTML = marked.parse(fullText)
+            // Auto-scroll to bottom of output
+            const panel = document.getElementById('output-panel')
+            panel.scrollIntoView({ behavior: 'smooth', block: 'end' })
+          }
+        } catch {}
+      }
+    }
+
+    setUIState('done')
+  } catch (err) {
+    document.getElementById('output-error-msg').textContent = err.message || 'Something went wrong. Check your API key and try again.'
+    setUIState('error')
+  } finally {
+    isStreaming = false
+  }
+}
+
+function downloadProgram() {
+  if (!fullText) return
+  const blob = new Blob([fullText], { type: 'text/plain' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'program.md'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+</script>
+</body>
+</html>
