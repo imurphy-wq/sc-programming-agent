@@ -21,7 +21,7 @@
       color: white;
       padding: 14px 24px;
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 12px;
     }
     .site-header h1 {
@@ -29,21 +29,177 @@
       font-weight: 800;
       letter-spacing: -0.02em;
     }
-    .site-header span {
+    .site-header .header-sub {
       font-size: 0.78rem;
       color: rgba(255,255,255,0.5);
       font-weight: 400;
+      flex: 1;
     }
 
-    /* ── Layout ── */
-    .main-layout {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 24px 20px;
+    /* ── State: FORM (State 1) ── */
+    #state-form {
       display: grid;
       grid-template-columns: 380px 1fr;
       gap: 20px;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 20px;
       align-items: start;
+    }
+    #state-form.hidden { display: none; }
+
+    /* ── State: GENERATING (State 2) ── */
+    #state-generating {
+      display: none;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+    #state-generating.visible { display: block; }
+
+    .gen-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .gen-header .gen-sport-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #6366f1;
+      margin-bottom: 6px;
+    }
+    .gen-header h2 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #1a1f2e;
+      margin-bottom: 6px;
+    }
+    .gen-header p {
+      font-size: 0.83rem;
+      color: #6b7280;
+    }
+
+    .gen-progress {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin: 16px 0 20px;
+    }
+    .gen-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #c7d2fe;
+      animation: dot-pulse 1.4s ease-in-out infinite;
+    }
+    .gen-dot:nth-child(2) { animation-delay: 0.2s; }
+    .gen-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot-pulse { 0%,80%,100% { transform: scale(0.8); opacity: 0.5; } 40% { transform: scale(1.2); opacity: 1; } }
+
+    .stream-box {
+      background: #1a1f2e;
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .stream-box pre {
+      font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 0.72rem;
+      color: #a5b4fc;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .stream-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 0.9em;
+      background: #6366f1;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* ── State: PROGRAM VIEW (State 3) ── */
+    #state-program {
+      display: none;
+      flex-direction: column;
+      min-height: calc(100vh - 51px);
+    }
+    #state-program.visible { display: flex; }
+
+    /* Program header bar */
+    .prog-bar {
+      background: #1a1f2e;
+      color: white;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .prog-bar-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      flex: 1;
+      min-width: 200px;
+    }
+    .prog-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .btn-back {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-back:hover { background: rgba(255,255,255,0.18); }
+    .btn-download {
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-download:hover { background: #4f46e5; }
+    .btn-print {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.75);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-print:hover { background: rgba(255,255,255,0.15); }
+
+    /* Program content area */
+    .prog-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      background: #f0f2f7;
+    }
+    .prog-inner {
+      max-width: 1300px;
+      margin: 0 auto;
     }
 
     /* ── Card base ── */
@@ -53,7 +209,7 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
     }
 
-    /* ── Form ── */
+    /* ── Form column ── */
     .form-card {
       padding: 20px;
     }
@@ -110,13 +266,11 @@
     .field { margin-bottom: 10px; }
     .field:last-child { margin-bottom: 0; }
 
-    /* Maxes inline layout */
     .maxes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
     .max-row { display: flex; align-items: center; gap: 8px; }
     .max-row label { font-size: 0.72rem; color: #6b7280; white-space: nowrap; flex: 0 0 80px; }
     .max-row input { flex: 1; }
 
-    /* Collapsible optional */
     .collapsible-toggle {
       display: flex;
       align-items: center;
@@ -144,7 +298,6 @@
     .collapsible-body { display: none; margin-top: 10px; }
     .collapsible-body.open { display: block; }
 
-    /* Error */
     .form-error {
       display: none;
       background: #fef2f2;
@@ -156,7 +309,6 @@
       margin-top: 12px;
     }
 
-    /* Generate button */
     .generate-btn {
       width: 100%;
       background: #1a1f2e;
@@ -175,13 +327,8 @@
     .generate-btn:active:not(:disabled) { transform: translateY(1px); }
     .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* ── Output column ── */
-    .output-col {
-      position: sticky;
-      top: 24px;
-    }
-
-    /* Empty state */
+    /* ── Form right: empty state ── */
+    .output-col { position: sticky; top: 24px; }
     .empty-state {
       padding: 48px 24px;
       text-align: center;
@@ -190,37 +337,7 @@
     .empty-state p { font-size: 0.85rem; color: #6b7280; line-height: 1.6; }
     .empty-state small { font-size: 0.75rem; color: #9ca3af; margin-top: 6px; display: block; }
 
-    /* Loading state */
-    .loading-state {
-      display: none;
-      padding: 48px 24px;
-      text-align: center;
-    }
-    .spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid #e5e7eb;
-      border-top-color: #6366f1;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 0 auto 16px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-state p { font-size: 0.85rem; color: #4b5563; font-weight: 500; }
-    .loading-state small { font-size: 0.75rem; color: #9ca3af; margin-top: 6px; display: block; }
-
-    /* Progress dots */
-    .progress-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
-    .progress-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #c7d2fe;
-      animation: dot-pulse 1.4s ease-in-out infinite;
-    }
-    .progress-dot:nth-child(2) { animation-delay: 0.2s; }
-    .progress-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes dot-pulse { 0%,80%,100% { transform: scale(0.8); opacity: 0.5; } 40% { transform: scale(1.2); opacity: 1; } }
-
-    /* Error state */
+    /* API error */
     .output-error {
       display: none;
       background: #fef2f2;
@@ -232,124 +349,96 @@
     .output-error strong { font-size: 0.85rem; color: #dc2626; display: block; }
     .output-error span { font-size: 0.82rem; color: #b91c1c; margin-top: 4px; display: block; }
 
-    /* Tab container */
-    .tab-container { display: none; }
-    .tab-container.visible { display: block; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* Tab header */
-    .tab-header {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      margin-bottom: 0;
-      border-bottom: 2px solid #e5e7eb;
-      padding: 0 4px;
-      background: white;
-      border-radius: 10px 10px 0 0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    /* ── Program: Reasoning (collapsible) ── */
+    .reasoning-section {
+      background: #fffbf0;
+      border: 1px solid #fed7aa;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      overflow: hidden;
     }
-    .tab-btn {
-      padding: 12px 18px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #6b7280;
-      background: none;
-      border: none;
+    .reasoning-section summary {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #92400e;
+      padding: 12px 16px;
       cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .tab-btn:hover { color: #374151; }
-    .tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; }
-    .tab-actions {
-      margin-left: auto;
+      user-select: none;
+      list-style: none;
       display: flex;
       align-items: center;
       gap: 8px;
-      padding-right: 8px;
     }
-    .streaming-badge {
-      font-size: 0.72rem;
-      color: #6366f1;
-      font-weight: 600;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-    .download-btn {
-      font-size: 0.75rem;
-      color: #6b7280;
-      border: 1px solid #e5e7eb;
-      background: white;
-      border-radius: 5px;
-      padding: 4px 10px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .download-btn:hover { background: #f9fafb; }
-
-    /* Tab panels */
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    /* Live streaming view */
-    .stream-panel {
-      background: white;
-      border-radius: 0 0 10px 10px;
-      padding: 16px;
-      max-height: 72vh;
-      overflow-y: auto;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
-    }
-    .stream-text {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.72rem;
-      color: #374151;
-      line-height: 1.7;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .stream-cursor {
+    .reasoning-section summary::-webkit-details-marker { display: none; }
+    .reasoning-section summary::before {
+      content: '▶';
+      font-size: 0.6rem;
+      transition: transform 0.2s;
       display: inline-block;
-      width: 2px;
-      height: 0.9em;
-      background: #6366f1;
-      margin-left: 2px;
-      animation: blink 1s step-end infinite;
-      vertical-align: text-bottom;
     }
-    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
-
-    /* Rendered program panel */
-    .program-panel {
-      background: #f8f9fc;
-      border-radius: 0 0 10px 10px;
-      padding: 16px;
-      max-height: 72vh;
-      overflow-y: auto;
-      overflow-x: hidden;
+    .reasoning-section[open] summary::before {
+      transform: rotate(90deg);
+    }
+    .reasoning-body {
+      padding: 0 16px 16px;
+      border-top: 1px solid #fed7aa;
+    }
+    .reasoning-body p {
+      font-size: 0.82rem;
+      color: #44403c;
+      line-height: 1.7;
+      margin-top: 10px;
+    }
+    .flags-heading {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #92400e;
+      margin: 14px 0 8px;
+    }
+    .flag-item {
+      border-left: 3px solid #f59e0b;
+      background: #fffbeb;
+      border-radius: 0 5px 5px 0;
+      padding: 8px 12px;
+      margin-bottom: 7px;
+      font-size: 0.8rem;
+      color: #44403c;
+      line-height: 1.5;
+    }
+    .no-flags {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
     }
 
-    /* ── Program Header card ── */
+    /* ── Program header card ── */
     .prog-header-card {
       background: #1a1f2e;
       color: white;
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 16px 20px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
     .prog-header-card .prog-title {
-      font-size: 0.88rem;
+      font-size: 0.95rem;
       font-weight: 800;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
       margin-bottom: 8px;
     }
     .prog-header-meta {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .prog-meta-badge {
       background: rgba(255,255,255,0.12);
@@ -363,7 +452,6 @@
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-top: 6px;
     }
     .prog-max-badge {
       background: rgba(99,102,241,0.25);
@@ -375,16 +463,16 @@
       font-weight: 600;
     }
 
-    /* ── Daily Pre-Lift card ── */
+    /* ── Pre-lift banner ── */
     .prelift-card {
       background: white;
       border: 1px solid #e5e7eb;
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 14px 16px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
-    .prelift-card .prelift-title {
-      font-size: 0.72rem;
+    .prelift-title {
+      font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -396,7 +484,6 @@
       align-items: flex-start;
       gap: 10px;
       margin-bottom: 8px;
-      font-size: 0.78rem;
     }
     .prelift-row:last-child { margin-bottom: 0; }
     .prelift-row-label {
@@ -404,6 +491,7 @@
       color: #374151;
       flex: 0 0 120px;
       font-size: 0.72rem;
+      padding-top: 2px;
     }
     .prelift-pills {
       display: flex;
@@ -423,29 +511,37 @@
     /* ── Day card ── */
     .day-card {
       background: white;
-      border-radius: 8px;
-      margin-bottom: 14px;
+      border-radius: 10px;
+      margin-bottom: 16px;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.03);
     }
     .day-header {
-      padding: 10px 16px;
+      padding: 12px 18px;
       color: white;
       display: flex;
       align-items: baseline;
-      gap: 10px;
+      gap: 12px;
+    }
+    .day-header-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      opacity: 0.7;
     }
     .day-header-title {
-      font-size: 0.85rem;
+      font-size: 1rem;
       font-weight: 800;
-      letter-spacing: 0.01em;
+      letter-spacing: -0.01em;
     }
     .day-header-focus {
-      font-size: 0.72rem;
+      font-size: 0.78rem;
       font-weight: 500;
-      opacity: 0.8;
+      opacity: 0.75;
+      margin-left: 4px;
     }
-    .day-body { padding: 12px 14px; }
+    .day-body { padding: 14px 16px; }
 
     /* Speed/COD block */
     .speed-block {
@@ -462,22 +558,12 @@
       letter-spacing: 0.07em;
       color: #166534;
       margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
     }
-    .speed-block ul {
-      list-style: none;
-      padding: 0;
-    }
-    .speed-block li {
-      font-size: 0.76rem;
-      color: #15803d;
-      padding: 2px 0;
-    }
-    .speed-block li::before { content: "→ "; font-weight: 700; }
+    .speed-block ul { list-style: none; padding: 0; }
+    .speed-block li { font-size: 0.76rem; color: #15803d; padding: 2px 0; }
+    .speed-block li::before { content: "-> "; font-weight: 700; }
 
-    /* Day warmup additions */
+    /* Warmup additions */
     .warmup-additions {
       background: #f0f9ff;
       border: 1px solid #bae6fd;
@@ -494,169 +580,148 @@
       margin-bottom: 6px;
     }
     .warmup-additions ul { list-style: none; padding: 0; }
-    .warmup-additions li {
-      font-size: 0.76rem;
-      color: #0c4a6e;
-      padding: 2px 0;
-    }
-    .warmup-additions li::before { content: "• "; }
+    .warmup-additions li { font-size: 0.76rem; color: #0c4a6e; padding: 2px 0; }
+    .warmup-additions li::before { content: "* "; }
 
-    /* Exercise table */
-    .ex-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* ── Exercise table ── */
+    .ex-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
     .ex-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.73rem;
-      min-width: 820px;
+      font-size: 0.8rem;
     }
-    .ex-table th {
-      padding: 6px 5px;
+
+    /* Col group header row */
+    .ex-table thead tr.wk-group-row th {
+      padding: 4px 5px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+    }
+    .ex-table thead tr.col-header th {
+      padding: 6px 6px;
       font-size: 0.63rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: #6b7280;
-      border-bottom: 2px solid #e5e7eb;
+      border-bottom: 2px solid #d1d5db;
       white-space: nowrap;
       text-align: center;
     }
-    .ex-table th.ex-col { text-align: left; }
+    .ex-table thead tr.col-header th.ex-col { text-align: left; }
+    .ex-table thead tr.col-header th.note-col { text-align: right; }
+
     .ex-table td {
-      padding: 6px 5px;
+      padding: 7px 6px;
       border-bottom: 1px solid #f3f4f6;
       vertical-align: middle;
       text-align: center;
     }
-    .ex-table td.ex-col { text-align: left; font-weight: 600; color: #1a1f2e; min-width: 140px; }
-    .ex-table tr:last-child td { border-bottom: none; }
-    /* Weekly column shading */
-    .wk1-bg { background: #fafafa; }
-    .wk2-bg { background: #f8f9ff; }
-    .wk3-bg { background: #fafafa; }
-    .wk4-bg { background: #f8f9ff; }
-    .ex-table th.wk1-bg, .ex-table th.wk2-bg, .ex-table th.wk3-bg, .ex-table th.wk4-bg {}
-    /* Sets/reps cells */
-    .setsreps { font-size: 0.82rem; font-weight: 700; color: #1a1f2e; white-space: nowrap; }
+    .ex-table td.ex-col {
+      text-align: left;
+      font-weight: 600;
+      color: #1a1f2e;
+      min-width: 160px;
+      padding-left: 8px;
+    }
+    .ex-table td.note-col {
+      text-align: right;
+      font-style: italic;
+      min-width: 100px;
+      padding-right: 10px;
+    }
+    .ex-table tbody tr:last-child td { border-bottom: none; }
+    .ex-table tbody tr:nth-child(even) td { background: #fafafa; }
+    .ex-table tbody tr:hover td { background: #f3f4f6; }
+
+    /* Week column backgrounds */
+    .wk1-h { background: #eef2ff; color: #4338ca; }
+    .wk2-h { background: #f0fdf4; color: #166534; }
+    .wk3-h { background: #fff7ed; color: #9a3412; }
+    .wk4-h { background: #fdf4ff; color: #7e22ce; }
+    .wk1-bg { background: #f8f9ff; }
+    .wk2-bg { background: #f8fdf9; }
+    .wk3-bg { background: #fffcf8; }
+    .wk4-bg { background: #fdf8ff; }
+
+    .setsreps {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #1a1f2e;
+      white-space: nowrap;
+    }
     .pct-cell { font-size: 0.68rem; color: #9ca3af; }
-    .wt-note { font-size: 0.68rem; font-style: italic; color: #6b7280; white-space: nowrap; }
-    .wt-note.add-note { color: #16a34a; font-weight: 600; }
-    .coaching-note { font-size: 0.7rem; font-style: italic; text-align: right; min-width: 100px; }
+    .wt-note { font-size: 0.7rem; font-style: italic; color: #6b7280; white-space: nowrap; }
+    .wt-note.add-note { color: #16a34a; font-weight: 700; font-style: normal; }
 
     /* # badge */
     .num-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       border-radius: 5px;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 700;
     }
     .badge-primary { background: #dbeafe; color: #1d4ed8; }
-    .badge-amber { background: #fef3c7; color: #b45309; }
-    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-amber   { background: #fef3c7; color: #b45309; }
+    .badge-green   { background: #dcfce7; color: #15803d; }
     .badge-default { background: #f3f4f6; color: #374151; }
 
-    /* ── Reasoning tab ── */
-    .reasoning-panel {
-      background: #f8f9fc;
-      border-radius: 0 0 10px 10px;
-      padding: 16px;
-      max-height: 72vh;
-      overflow-y: auto;
-    }
-    .reasoning-card {
-      background: #fffbf0;
-      border: 1px solid #fed7aa;
-      border-radius: 8px;
-      padding: 18px 20px;
-      margin-bottom: 12px;
-    }
-    .reasoning-card h3 {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #92400e;
-      margin-bottom: 12px;
-    }
-    .reasoning-card p {
-      font-size: 0.82rem;
-      color: #44403c;
-      line-height: 1.7;
-      margin-bottom: 10px;
-    }
-    .reasoning-card p:last-child { margin-bottom: 0; }
-    .red-flags-card {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 18px 20px;
-    }
-    .red-flags-card h3 {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #6b7280;
-      margin-bottom: 12px;
-    }
-    .flag-item {
-      border-left: 3px solid #f59e0b;
-      background: #fffbeb;
-      border-radius: 0 5px 5px 0;
-      padding: 8px 12px;
-      margin-bottom: 7px;
-      font-size: 0.8rem;
-      color: #44403c;
-      line-height: 1.5;
-    }
-    .flag-item:last-child { margin-bottom: 0; }
-    .no-flags {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      color: #166534;
-      border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
     /* Scrollbar styling */
-    .program-panel::-webkit-scrollbar,
-    .stream-panel::-webkit-scrollbar,
-    .reasoning-panel::-webkit-scrollbar { width: 5px; }
-    .program-panel::-webkit-scrollbar-track,
-    .stream-panel::-webkit-scrollbar-track,
-    .reasoning-panel::-webkit-scrollbar-track { background: transparent; }
-    .program-panel::-webkit-scrollbar-thumb,
-    .stream-panel::-webkit-scrollbar-thumb,
-    .reasoning-panel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+    .prog-content::-webkit-scrollbar,
+    .stream-box::-webkit-scrollbar { width: 5px; }
+    .prog-content::-webkit-scrollbar-track,
+    .stream-box::-webkit-scrollbar-track { background: transparent; }
+    .prog-content::-webkit-scrollbar-thumb,
+    .stream-box::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+    /* ── Print styles ── */
+    @media print {
+      .site-header, .prog-bar { display: none !important; }
+      #state-program { display: block !important; }
+      .prog-content { padding: 0; overflow: visible; }
+      .day-card { break-inside: avoid; }
+      .ex-table-wrap { overflow: visible; }
+      body { background: white; font-size: 9pt; }
+      .ex-table { font-size: 7.5pt; }
+    }
 
     @media (max-width: 900px) {
-      .main-layout { grid-template-columns: 1fr; }
+      #state-form { grid-template-columns: 1fr; }
       .output-col { position: static; }
+      .prog-bar { flex-direction: column; align-items: flex-start; }
     }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
   <header class="site-header">
     <h1>S&amp;C Programming Agent</h1>
-    <span>College Athlete Program Generator</span>
+    <span class="header-sub">College Athlete Program Generator</span>
   </header>
 
-  <div class="main-layout">
+  <!-- ══════════════════════ STATE 1: FORM ══════════════════════ -->
+  <div id="state-form">
 
-    <!-- ── FORM ── -->
+    <!-- Form column -->
     <div class="card form-card">
       <h2>Athlete Intake</h2>
 
-      <!-- Outcome -->
       <div class="form-section">
         <div class="field">
           <label class="field-label">Outcome Goal <span class="req">*</span></label>
@@ -665,7 +730,6 @@
         </div>
       </div>
 
-      <!-- Sport & Position -->
       <div class="form-section">
         <div class="grid-2">
           <div class="field">
@@ -704,7 +768,6 @@
         </div>
       </div>
 
-      <!-- Athlete Profile -->
       <div class="form-section">
         <div class="section-label">Athlete Profile</div>
         <div class="grid-3" style="margin-bottom:10px">
@@ -725,14 +788,13 @@
           <label class="field-label">Training Age</label>
           <select id="f-training-age">
             <option value="">Not specified</option>
-            <option value="novice">Novice (0–1 year)</option>
-            <option value="intermediate">Intermediate (1–3 years)</option>
+            <option value="novice">Novice (0-1 year)</option>
+            <option value="intermediate">Intermediate (1-3 years)</option>
             <option value="advanced">Advanced (3+ years)</option>
           </select>
         </div>
       </div>
 
-      <!-- Testing Maxes -->
       <div class="form-section">
         <div class="section-label">Testing Maxes <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.68rem;color:#c4c9d4">(leave blank if untested)</span></div>
         <div class="maxes-grid">
@@ -767,7 +829,6 @@
         </div>
       </div>
 
-      <!-- Optional fields (collapsible) -->
       <div class="form-section">
         <button class="collapsible-toggle" onclick="toggleOptional(this)" type="button">
           <i class="toggle-icon">&#9658;</i>
@@ -804,56 +865,52 @@
       </button>
     </div>
 
-    <!-- ── OUTPUT ── -->
+    <!-- Right column: empty state / error -->
     <div class="output-col">
-
       <div class="output-error card" id="output-error">
         <strong>Error</strong>
         <span id="output-error-msg"></span>
       </div>
-
-      <!-- Empty state -->
       <div class="card empty-state" id="empty-state">
         <div class="empty-icon">&#127947;</div>
         <p>Fill out the form and click <strong>Generate Program</strong> to get a complete periodized training program.</p>
-        <small>Programs match your template: 4-week blocks, Day 1–4 split, superset grouping, progressive loading.</small>
+        <small>Programs match your template: 4-week blocks, Day 1-4 split, superset grouping, progressive loading.</small>
       </div>
+    </div>
 
-      <!-- Loading state -->
-      <div class="card loading-state" id="loading-state">
-        <div class="spinner"></div>
-        <p>Building your program...</p>
-        <small>This takes 15–40 seconds. Program will stream in as it generates.</small>
-        <div class="progress-dots">
-          <div class="progress-dot"></div>
-          <div class="progress-dot"></div>
-          <div class="progress-dot"></div>
-        </div>
+  </div>
+
+  <!-- ══════════════════════ STATE 2: GENERATING ══════════════════════ -->
+  <div id="state-generating">
+    <div class="gen-header">
+      <div class="gen-sport-label" id="gen-sport-label">Football</div>
+      <h2>Generating your program...</h2>
+      <p>This takes 15-40 seconds. The program is streaming in below.</p>
+      <div class="gen-progress">
+        <div class="gen-dot"></div>
+        <div class="gen-dot"></div>
+        <div class="gen-dot"></div>
       </div>
+    </div>
+    <div class="stream-box">
+      <pre id="stream-text"></pre><span class="stream-cursor" id="stream-cursor"></span>
+    </div>
+  </div>
 
-      <!-- Tab container -->
-      <div class="tab-container" id="tab-container">
-        <div class="tab-header">
-          <button class="tab-btn active" id="tab-program-btn" onclick="switchTab('program')" type="button">Program</button>
-          <button class="tab-btn" id="tab-reasoning-btn" onclick="switchTab('reasoning')" type="button">Reasoning</button>
-          <div class="tab-actions">
-            <span class="streaming-badge" id="streaming-badge" style="display:none">● Generating...</span>
-            <button class="download-btn" id="download-btn" onclick="downloadProgram()" type="button" style="display:none">Download .md</button>
-          </div>
-        </div>
-
-        <!-- Program tab: streaming view (shown while generating) -->
-        <div class="tab-panel active stream-panel" id="panel-stream">
-          <div class="stream-text" id="stream-text"></div><span class="stream-cursor" id="stream-cursor"></span>
-        </div>
-
-        <!-- Program tab: rendered view (shown after done) -->
-        <div class="tab-panel program-panel" id="panel-program"></div>
-
-        <!-- Reasoning tab -->
-        <div class="tab-panel reasoning-panel" id="panel-reasoning"></div>
+  <!-- ══════════════════════ STATE 3: PROGRAM VIEW ══════════════════════ -->
+  <div id="state-program">
+    <div class="prog-bar">
+      <div class="prog-bar-title" id="prog-bar-title">Program</div>
+      <div class="prog-bar-actions">
+        <button class="btn-back" onclick="goBack()" type="button">&#8592; New Program</button>
+        <button class="btn-print" onclick="window.print()" type="button">Print / PDF</button>
+        <button class="btn-download" onclick="downloadProgram()" type="button">&#8595; Download</button>
       </div>
-
+    </div>
+    <div class="prog-content">
+      <div class="prog-inner" id="program-content">
+        <!-- rendered program goes here -->
+      </div>
     </div>
   </div>
 
@@ -877,11 +934,11 @@ const SPORTS = {
   'swimming':       { label: 'Swimming',             positions: ['Sprint Freestyle (50/100)','Mid Free (200)','Distance Free (500/1000/1650)','Backstroke','Breaststroke','Butterfly','Individual Medley'] },
   'rowing':         { label: 'Rowing',               positions: ['Sweep (8+)','Sweep (4+)','Scull (1x)','Scull (2x/4x)','Coxswain'] },
   'cross-country':  { label: 'Cross Country',        positions: ['Top 7 (Scoring)','Non-scoring','General'] },
-  'track-sprint':   { label: 'Track – Sprints/Hurdles', positions: ['100m/200m','400m','110m/100m Hurdles','400m Hurdles','4x1/4x4 Relay'] },
-  'track-mid':      { label: 'Track – Mid/Distance', positions: ['800m','1500m/Mile','5000m','10000m','Steeplechase'] },
-  'track-jumps':    { label: 'Track – Jumps',        positions: ['High Jump','Long Jump','Triple Jump','Pole Vault'] },
-  'track-throws':   { label: 'Track – Throws',       positions: ['Shot Put','Discus','Javelin','Hammer','Weight Throw'] },
-  'track-combined': { label: 'Track – Combined Events', positions: ['Heptathlon','Decathlon','Pentathlon'] },
+  'track-sprint':   { label: 'Track - Sprints/Hurdles', positions: ['100m/200m','400m','110m/100m Hurdles','400m Hurdles','4x1/4x4 Relay'] },
+  'track-mid':      { label: 'Track - Mid/Distance', positions: ['800m','1500m/Mile','5000m','10000m','Steeplechase'] },
+  'track-jumps':    { label: 'Track - Jumps',        positions: ['High Jump','Long Jump','Triple Jump','Pole Vault'] },
+  'track-throws':   { label: 'Track - Throws',       positions: ['Shot Put','Discus','Javelin','Hammer','Weight Throw'] },
+  'track-combined': { label: 'Track - Combined Events', positions: ['Heptathlon','Decathlon','Pentathlon'] },
   'gymnastics-w':   { label: "Gymnastics (Women's)", positions: ['All-Around','Vault Specialist','Uneven Bars Specialist','Balance Beam Specialist','Floor Specialist'] },
   'gymnastics-m':   { label: "Gymnastics (Men's)",   positions: ['All-Around','Floor Specialist','Pommel Horse Specialist','Still Rings Specialist','Vault Specialist','Parallel Bars Specialist','High Bar Specialist'] },
   'golf':           { label: 'Golf',                 positions: ['General (All)'] },
@@ -915,7 +972,7 @@ Test Maxes: Squat: [#] lbs | Bench: [#] lbs | Clean: [#] lbs | Trap DL: [#] lbs 
 ═══════════════════════════════════════════════════════════════
 
 ## REASONING
-[2–4 paragraphs. Explain: periodization model selected and why. Sport/position specific rationale.
+[2-4 paragraphs. Explain: periodization model selected and why. Sport/position specific rationale.
 Key programming decisions and their basis. What each phase achieves. Coach-to-coach language.]
 
 ## RED FLAGS / CAVEATS
@@ -955,7 +1012,7 @@ Dynamic Warmup: [Sport-specific: Scoops, Knee Pulls, Fig. 4s, Lat Lunges, Open/C
 
 | # | EXERCISE | WK1 % | WK1 SETS×REPS | WK1 WT NOTE | WK2 % | WK2 SETS×REPS | WK2 WT NOTE | WK3 % | WK3 SETS×REPS | WK3 WT NOTE | WK4 % | WK4 SETS×REPS | WK4 WT NOTE | COACHING NOTE |
 |---|----------|-------|--------------|------------|-------|--------------|------------|-------|--------------|------------|-------|--------------|------------|--------------|
-| 1 | Bench Press | — | 4×8 | start light | — | 4×8 | add 5 lbs | — | 4×6 | add 5–10 more | — | 4×6 | add if able | |
+| 1 | Bench Press | — | 4×8 | start light | — | 4×8 | add 5 lbs | — | 4×6 | add 5-10 more | — | 4×6 | add if able | |
 | 2 | Pull-ups | — | 4×6 | can use machine | — | 4×6 | go heavier | — | 4×7 | | — | 4×8 | | |
 
 [Continue for DAY 3 and DAY 4 in the same format]
@@ -971,7 +1028,7 @@ Dynamic Warmup: [Sport-specific: Scoops, Knee Pulls, Fig. 4s, Lat Lunges, Open/C
 6. **Coaching notes**: Short, imperative. Use uppercase for key cues: "get HIGH", "ELBOWS UP", "walk back is rest", "FULL REST".
 7. **Day-specific warmup additions**: Layer additional warmup on top of standard daily pre-lift for upper body days (Band Pull Aparts, Push-up to T, Medball variations) and for days with special emphasis.
 8. **Always: Reasoning → Red Flags → Daily Pre-Lift → Days**. This order is mandatory.
-9. **No false precision**: Rest periods as ranges (90–120 sec). % as clean integers or "—".
+9. **No false precision**: Rest periods as ranges (90-120 sec). % as clean integers or "—".
 10. **Training age note at bottom**: If novice, add a note: "NOTE: Program complexity and load progression are conservative — movement quality is the priority this block."
 
 ## SPORT-SPECIFIC PROGRAMMING RULES
@@ -1001,7 +1058,7 @@ Dynamic Warmup: [Sport-specific: Scoops, Knee Pulls, Fig. 4s, Lat Lunges, Open/C
 
 ### Endurance Athletes (Cross Country, Track Distance, Swimming, Rowing)
 - Minimal hypertrophy; maximize neural adaptation (low volume, heavy load, explosive intent)
-- 2 sessions/week max strength; minimize volume (2–3 working sets per exercise, 3–5 exercises per session)
+- 2 sessions/week max strength; minimize volume (2-3 working sets per exercise, 3-5 exercises per session)
 - Never program high-volume eccentric quad work for runners (adds recovery burden without performance transfer)
 - In Reasoning: always acknowledge concurrent training interference; explain why the programming minimizes it
 
@@ -1029,32 +1086,32 @@ Dynamic Warmup: [Sport-specific: Scoops, Knee Pulls, Fig. 4s, Lat Lunges, Open/C
 - Block 3: Power/Speed Conversion — reduced volume, high intensity, speed-strength expression, competition prep
 - Use DUP or block periodization; full 4-day split if days allow
 
-### Pre-Season (4–8 weeks before first competition)
+### Pre-Season (4-8 weeks before first competition)
 - Realization/power phase — volume reduced, intensity high, sport-specific power emphasis
 - Begin tapering approach for competition
 - Conditioning emphasis increases
 
 ### In-Season (during competition period)
-- Maintenance: 1–2 sessions/week; preserve intensity (≥70–80% 1RM); volume reduced 30–50% vs. off-season
-- CRITICAL: Schedule around competition — never heavy loading 24–48 hours before games
+- Maintenance: 1-2 sessions/week; preserve intensity (>=70-80% 1RM); volume reduced 30-50% vs. off-season
+- CRITICAL: Schedule around competition — never heavy loading 24-48 hours before games
 - In Reasoning: explicitly acknowledge game/practice load as training stimulus
 - Day 4 becomes primarily conditioning when lifting is reduced
 
-### Post-Season (1–3 weeks)
+### Post-Season (1-3 weeks)
 - Active recovery; general conditioning; movement quality restoration
 - Not a training block — a physical and mental transition period
 - Low intensity, no testing, no max effort work
 
 ## TRAINING AGE RULES
 
-### Novice (0–1 year structured training)
+### Novice (0-1 year structured training)
 - Do NOT use advanced intensification techniques
 - Conservative volume; movement quality before load
 - Simple progressions: "add weight when all reps are clean"
-- Do NOT prescribe complex periodized blocks; keep exercise selection to 4–6 foundational movements per day
+- Do NOT prescribe complex periodized blocks; keep exercise selection to 4-6 foundational movements per day
 - Add note at program end: "COACH NOTE: This is a foundation-building block. Movement quality takes priority over load. Do not advance weights if technique degrades."
 
-### Intermediate (1–3 years consistent, programmatic training)
+### Intermediate (1-3 years consistent, programmatic training)
 - LP or DUP appropriate; moderate complexity
 - % prescriptions when maxes are established
 - Exercise progressions within blocks appropriate
@@ -1086,7 +1143,6 @@ const API_URL = 'https://sc-programming-agent.vercel.app/api/generate'
 // ─── State ───────────────────────────────────────────────────────────────────
 let fullText = ''
 let isStreaming = false
-let currentTab = 'program'
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 ;(function init() {
@@ -1159,33 +1215,35 @@ function validate() {
   return errors
 }
 
-// ─── UI state ────────────────────────────────────────────────────────────────
-function setUIState(state) {
-  const loading = document.getElementById('loading-state')
-  const empty = document.getElementById('empty-state')
-  const tabs = document.getElementById('tab-container')
-  const streamBadge = document.getElementById('streaming-badge')
-  const cursor = document.getElementById('stream-cursor')
-  const dlBtn = document.getElementById('download-btn')
-  const errPanel = document.getElementById('output-error')
+// ─── App state transitions ────────────────────────────────────────────────────
+function showForm() {
+  document.getElementById('state-form').classList.remove('hidden')
+  document.getElementById('state-generating').classList.remove('visible')
+  document.getElementById('state-program').classList.remove('visible')
+}
+
+function showGenerating(sportLabel) {
+  document.getElementById('state-form').classList.add('hidden')
+  document.getElementById('state-generating').classList.add('visible')
+  document.getElementById('state-program').classList.remove('visible')
+  document.getElementById('gen-sport-label').textContent = sportLabel
+  document.getElementById('stream-text').textContent = ''
+}
+
+function showProgram() {
+  document.getElementById('state-form').classList.add('hidden')
+  document.getElementById('state-generating').classList.remove('visible')
+  document.getElementById('state-program').classList.add('visible')
+}
+
+function goBack() {
+  showForm()
+  // Re-enable generate button
   const btn = document.getElementById('generate-btn')
-  const btnText = document.getElementById('btn-text')
-
-  loading.style.display = state === 'loading' ? 'block' : 'none'
-  empty.style.display = state === 'idle' ? '' : 'none'
-  errPanel.style.display = state === 'error' ? '' : 'none'
-  tabs.classList.toggle('visible', state === 'streaming' || state === 'done')
-  streamBadge.style.display = state === 'streaming' ? '' : 'none'
-  cursor.style.display = state === 'streaming' ? '' : 'none'
-  dlBtn.style.display = state === 'done' ? '' : 'none'
-
-  if (state === 'loading' || state === 'streaming') {
-    btn.disabled = true
-    btnText.textContent = state === 'loading' ? 'Connecting...' : 'Generating...'
-  } else {
-    btn.disabled = false
-    btnText.textContent = 'Generate Program'
-  }
+  btn.disabled = false
+  document.getElementById('btn-text').textContent = 'Generate Program'
+  // Clear any error
+  document.getElementById('output-error').style.display = 'none'
 }
 
 function showFormError(msg) {
@@ -1195,30 +1253,6 @@ function showFormError(msg) {
   setTimeout(() => { el.style.display = 'none' }, 5000)
 }
 
-function switchTab(tab) {
-  currentTab = tab
-  const programBtn = document.getElementById('tab-program-btn')
-  const reasoningBtn = document.getElementById('tab-reasoning-btn')
-  const streamPanel = document.getElementById('panel-stream')
-  const programPanel = document.getElementById('panel-program')
-  const reasoningPanel = document.getElementById('panel-reasoning')
-
-  programBtn.classList.toggle('active', tab === 'program')
-  reasoningBtn.classList.toggle('active', tab === 'reasoning')
-
-  if (tab === 'program') {
-    // If streaming, show stream; if done, show rendered
-    const isDone = document.getElementById('download-btn').style.display !== 'none'
-    streamPanel.classList.toggle('active', !isDone)
-    programPanel.classList.toggle('active', isDone)
-    reasoningPanel.classList.remove('active')
-  } else {
-    streamPanel.classList.remove('active')
-    programPanel.classList.remove('active')
-    reasoningPanel.classList.add('active')
-  }
-}
-
 // ─── Main generate function ───────────────────────────────────────────────────
 async function generateProgram() {
   if (isStreaming) return
@@ -1226,28 +1260,24 @@ async function generateProgram() {
   const errors = validate()
   if (errors.length) { showFormError(errors.join(' ')); return }
 
+  const formData = collectFormData()
+  const sportCfg = SPORTS[formData.sport]
+  const sportLabel = sportCfg ? sportCfg.label : formData.sport
+
   isStreaming = true
   fullText = ''
-  document.getElementById('stream-text').textContent = ''
-  document.getElementById('panel-program').innerHTML = ''
-  document.getElementById('panel-reasoning').innerHTML = ''
-  document.getElementById('output-error-msg').textContent = ''
 
-  // Reset tabs to program/stream view
-  currentTab = 'program'
-  document.getElementById('tab-program-btn').classList.add('active')
-  document.getElementById('tab-reasoning-btn').classList.remove('active')
-  document.getElementById('panel-stream').classList.add('active')
-  document.getElementById('panel-program').classList.remove('active')
-  document.getElementById('panel-reasoning').classList.remove('active')
+  const btn = document.getElementById('generate-btn')
+  btn.disabled = true
+  document.getElementById('btn-text').textContent = 'Generating...'
 
-  setUIState('loading')
+  showGenerating(sportLabel)
 
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ formData: collectFormData() }),
+      body: JSON.stringify({ formData }),
     })
 
     if (!response.ok) {
@@ -1256,67 +1286,100 @@ async function generateProgram() {
       throw new Error(msg)
     }
 
-    setUIState('streaming')
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
     const streamEl = document.getElementById('stream-text')
-    const streamPanel = document.getElementById('panel-stream')
+    const streamBox = document.querySelector('.stream-box')
 
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
       fullText += decoder.decode(value, { stream: true })
       streamEl.textContent = fullText
-      // Auto-scroll stream panel
-      streamPanel.scrollTop = streamPanel.scrollHeight
+      streamBox.scrollTop = streamBox.scrollHeight
     }
 
     // Parse and render
     const parsed = parseOutput(fullText)
-    document.getElementById('panel-program').innerHTML = renderProgram(parsed)
-    document.getElementById('panel-reasoning').innerHTML = renderReasoning(parsed)
+    const programTitle = extractProgramTitle(fullText)
+    document.getElementById('prog-bar-title').textContent = programTitle
+    document.getElementById('program-content').innerHTML = buildProgramHTML(parsed)
 
-    // Switch to rendered program view
-    document.getElementById('panel-stream').classList.remove('active')
-    document.getElementById('panel-program').classList.add('active')
-
-    setUIState('done')
+    showProgram()
   } catch (err) {
+    showForm()
     document.getElementById('output-error-msg').textContent = err.message || 'Something went wrong. Check your API key and try again.'
-    setUIState('error')
+    document.getElementById('output-error').style.display = ''
+    btn.disabled = false
+    document.getElementById('btn-text').textContent = 'Generate Program'
   } finally {
     isStreaming = false
+    btn.disabled = false
+    document.getElementById('btn-text').textContent = 'Generate Program'
   }
 }
 
+// ─── Download ─────────────────────────────────────────────────────────────────
 function downloadProgram() {
-  if (!fullText) return
-  const blob = new Blob([fullText], { type: 'text/plain' })
-  const url = URL.createObjectURL(blob)
+  const content = document.getElementById('program-content')
+  if (!content) return
+
+  const printContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>S&amp;C Program</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 10pt; margin: 20px; color: #111; }
+    h2 { margin: 20px 0 6px; font-size: 11pt; page-break-after: avoid; }
+    table { width: 100%; border-collapse: collapse; margin: 6px 0 16px; font-size: 7.5pt; }
+    th { background: #1a1f2e; color: white; padding: 4px 6px; text-align: left; font-size: 7pt; }
+    td { padding: 3px 6px; border: 1px solid #e5e7eb; vertical-align: middle; }
+    tr:nth-child(even) td { background: #f9fafb; }
+    .day-header { background: #1a1f2e; color: white; padding: 8px 12px; margin: 16px 0 6px; border-radius: 4px; font-weight: bold; }
+    .prog-header { background: #1a1f2e; color: white; padding: 12px 16px; border-radius: 4px; margin-bottom: 12px; }
+    .prelift { background: #f9fafb; border: 1px solid #e5e7eb; padding: 10px; margin-bottom: 12px; border-radius: 4px; font-size: 9pt; }
+    details { margin-bottom: 12px; background: #fffbf0; border: 1px solid #fed7aa; padding: 10px; border-radius: 4px; }
+    @media print { body { margin: 10mm; } .day-card { page-break-inside: avoid; } }
+  </style>
+</head>
+<body>
+${content.innerHTML}
+</body>
+</html>`
+
+  const blob = new Blob([printContent], { type: 'text/html' })
   const a = document.createElement('a')
-  a.href = url
-  a.download = 'program.md'
+  a.href = URL.createObjectURL(blob)
+  a.download = 'sc-program.html'
   a.click()
-  URL.revokeObjectURL(url)
+  URL.revokeObjectURL(a.href)
 }
 
-// ─── Parsing ─────────────────────────────────────────────────────────────────
+// ─── Parsing ──────────────────────────────────────────────────────────────────
+
+function extractProgramTitle(text) {
+  const match = text.match(/PROGRAM:\s*([^\n|]+)(?:\|([^\n|]+))?(?:\|([^\n]+))?/)
+  if (!match) return 'Training Program'
+  const parts = [match[1], match[2], match[3]].filter(Boolean).map(s => s.trim())
+  return parts.join(' | ')
+}
 
 function parseOutput(text) {
-  // Find where the program body begins (DAILY PRE-LIFT separator line)
-  const preLiftMatch = text.search(/─{3,}[\s\S]{0,30}?\n[^\n]*DAILY PRE-LIFT|^─{3,}\s*\n## DAILY PRE-LIFT|## DAILY PRE-LIFT/im)
-  const reasoningMatch = text.search(/^## REASONING/im)
+  // Find key section boundaries
+  const preLiftIdx = text.search(/─{3,}[\s\S]{0,5}\n[^\n]*DAILY PRE-LIFT|## DAILY PRE-LIFT/im)
+  const reasoningIdx = text.search(/^## REASONING/im)
 
   let programHeader = ''
   let reasoning = ''
   let programBody = ''
 
-  if (preLiftMatch > 0) {
-    programHeader = text.slice(0, reasoningMatch > 0 ? reasoningMatch : 0).trim()
-    if (reasoningMatch > 0) {
-      reasoning = text.slice(reasoningMatch, preLiftMatch).trim()
+  if (preLiftIdx > 0) {
+    programHeader = text.slice(0, reasoningIdx > 0 ? reasoningIdx : preLiftIdx).trim()
+    if (reasoningIdx > 0) {
+      reasoning = text.slice(reasoningIdx, preLiftIdx).trim()
     }
-    programBody = text.slice(preLiftMatch).trim()
+    programBody = text.slice(preLiftIdx).trim()
   } else {
     reasoning = text
     programBody = ''
@@ -1328,44 +1391,57 @@ function parseOutput(text) {
 function parseMarkdownTable(mdTable) {
   const lines = mdTable.trim().split('\n').filter(l => l.includes('|'))
   if (lines.length < 3) return null
-  const headers = lines[0].split('|').map(h => h.trim()).filter(Boolean)
-  const rows = lines.slice(2).map(l => l.split('|').map(c => c.trim()).filter(Boolean))
+  const parseRow = l => l.split('|').map(c => c.trim()).filter((c, i, a) => i !== 0 || c).filter(Boolean)
+  const headers = parseRow(lines[0])
+  // lines[1] is the separator
+  const rows = lines.slice(2).map(parseRow).filter(r => r.length > 1)
   return { headers, rows }
 }
 
-// ─── Rendering ───────────────────────────────────────────────────────────────
+// ─── HTML builders ────────────────────────────────────────────────────────────
 
-function renderProgram(parsed) {
+function buildProgramHTML(parsed) {
   let html = ''
+
+  // Program header card
   if (parsed.programHeader) {
-    html += renderProgramHeader(parsed.programHeader)
+    html += buildProgramHeaderCard(parsed.programHeader)
   }
+
+  // Reasoning collapsible
+  if (parsed.reasoning) {
+    html += buildReasoningSection(parsed.reasoning)
+  }
+
+  // Program body: pre-lift + day cards
   if (parsed.programBody) {
-    html += renderProgramBody(parsed.programBody)
+    html += buildProgramBody(parsed.programBody)
   }
-  return html || '<p style="color:#9ca3af;font-size:0.82rem;padding:16px">No program content found.</p>'
+
+  if (!html) {
+    html = '<p style="color:#9ca3af;font-size:0.85rem;padding:16px">No program content found. The AI response may have been formatted differently than expected.</p>'
+  }
+
+  return html
 }
 
-function renderProgramHeader(headerText) {
-  // Extract lines from the ═══ block
-  const lines = headerText.split('\n').filter(l => l.trim() && !l.match(/^═+$/))
+function buildProgramHeaderCard(headerText) {
+  const lines = headerText.split('\n').filter(l => l.trim() && !l.match(/^[=]+$/))
   let title = ''
-  let metaBadges = []
-  let maxBadges = []
+  const metaBadges = []
+  const maxBadges = []
 
   lines.forEach(line => {
-    const clean = line.replace(/^[═─]+\s*/, '').trim()
+    const clean = line.replace(/^[═─=\-]+\s*/, '').trim()
     if (!clean) return
-    if (clean.startsWith('PROGRAM:') || clean.startsWith('PROGRAM ')) {
-      // Parse: PROGRAM: SPORT | Season: X | Block Y Phase Z
+    if (/^PROGRAM:/i.test(clean)) {
       const parts = clean.replace(/^PROGRAM:\s*/i, '').split('|').map(p => p.trim())
       title = parts[0] || clean
       parts.slice(1).forEach(p => { if (p) metaBadges.push(escHtml(p)) })
-    } else if (clean.startsWith('Athlete Type:')) {
+    } else if (/^Athlete Type:/i.test(clean)) {
       metaBadges.push(escHtml(clean))
-    } else if (clean.startsWith('Test Maxes:') || clean.startsWith('Test maxes:')) {
-      const maxPart = clean.replace(/^Test Maxes?:\s*/i, '')
-      maxPart.split('|').forEach(m => {
+    } else if (/^Test Maxes?:/i.test(clean)) {
+      clean.replace(/^Test Maxes?:\s*/i, '').split('|').forEach(m => {
         const t = m.trim()
         if (t) maxBadges.push(escHtml(t))
       })
@@ -1375,7 +1451,7 @@ function renderProgramHeader(headerText) {
   })
 
   let html = `<div class="prog-header-card">`
-  html += `<div class="prog-title">${escHtml(title) || 'Program'}</div>`
+  html += `<div class="prog-title">${escHtml(title) || 'S&amp;C Program'}</div>`
   if (metaBadges.length) {
     html += `<div class="prog-header-meta">`
     metaBadges.forEach(b => { html += `<span class="prog-meta-badge">${b}</span>` })
@@ -1390,45 +1466,79 @@ function renderProgramHeader(headerText) {
   return html
 }
 
-function renderProgramBody(bodyText) {
-  let html = ''
+function buildReasoningSection(reasoningText) {
+  const flagsIdx = reasoningText.search(/^## RED FLAGS/im)
+  const reasoningBody = (flagsIdx > 0 ? reasoningText.slice(0, flagsIdx) : reasoningText)
+    .replace(/^## REASONING\s*/im, '').trim()
+  const flagsBody = flagsIdx > 0 ? reasoningText.slice(flagsIdx).trim() : ''
 
-  // Extract and render daily pre-lift section
-  const preliftMatch = bodyText.match(/(?:─+\s*\n)?## DAILY PRE-LIFT[^\n]*\n([\s\S]*?)(?=\n─+|\n## DAY|\n\*\*DAY|$)/i)
-  if (preliftMatch) {
-    html += renderPreLift(preliftMatch[0])
+  let inner = ''
+
+  if (reasoningBody) {
+    const paras = reasoningBody.split(/\n\n+/).filter(p => p.trim())
+    paras.forEach(para => {
+      inner += `<p>${escHtml(para.replace(/\n/g, ' ').trim())}</p>`
+    })
   }
 
-  // Split on DAY sections
-  // Match ## DAY or bold **DAY headers
-  const daySections = bodyText.split(/(?=\n## DAY\s|\n\*\*DAY\s)/)
-  daySections.forEach(section => {
-    const trimmed = section.trim()
+  if (flagsBody) {
+    inner += `<div class="flags-heading">Red Flags / Caveats</div>`
+    const flagLines = flagsBody.replace(/^## RED FLAGS[^\n]*/im, '').trim().split('\n')
+    const bullets = flagLines
+      .map(l => l.trim())
+      .filter(l => l && (l.startsWith('-') || l.startsWith('*') || l.startsWith('•') || !l.startsWith('#')))
+      .map(l => l.replace(/^[-*•]\s*/, '').trim())
+      .filter(Boolean)
+
+    if (bullets.length === 0 || bullets.every(b => /no significant red flags/i.test(b))) {
+      inner += `<span class="no-flags">&#10003; No significant red flags for this profile</span>`
+    } else {
+      bullets.forEach(b => { inner += `<div class="flag-item">${escHtml(b)}</div>` })
+    }
+  }
+
+  return `<details class="reasoning-section">
+  <summary>Reasoning &amp; Red Flags</summary>
+  <div class="reasoning-body">${inner}</div>
+</details>`
+}
+
+function buildProgramBody(bodyText) {
+  let html = ''
+
+  // Extract pre-lift
+  const preliftMatch = bodyText.match(/(?:─+\s*\n)?(?:## )?DAILY PRE-LIFT[^\n]*\n([\s\S]*?)(?=\n─+|\n## DAY|\n\*\*DAY|$)/i)
+  if (preliftMatch) {
+    html += buildPreLiftCard(preliftMatch[0])
+  }
+
+  // Split into day blocks
+  // Split on ## DAY N or **DAY N (at start of line)
+  const dayBlocks = bodyText.split(/(?=\n## DAY\s|\n\*\*DAY\s)/i)
+  dayBlocks.forEach((block, idx) => {
+    const trimmed = block.trim()
     if (/^## DAY\s/i.test(trimmed) || /^\*\*DAY\s/i.test(trimmed)) {
-      html += renderDaySection(trimmed)
+      html += buildDayCard(trimmed)
     }
   })
 
   return html
 }
 
-function renderPreLift(preliftText) {
+function buildPreLiftCard(preliftText) {
   const lines = preliftText.split('\n')
     .map(l => l.trim())
-    .filter(l => l && !l.match(/^─+$/) && !l.match(/^## DAILY PRE-LIFT/i))
+    .filter(l => l && !l.match(/^─+$/) && !l.match(/^## DAILY PRE-LIFT|^DAILY PRE-LIFT/i))
 
   let foamRoll = [], staticStr = [], dynamicW = []
 
   lines.forEach(line => {
     if (/^Foam Roll:/i.test(line)) {
-      const content = line.replace(/^Foam Roll:\s*/i, '')
-      foamRoll = content.split(/[\/,—]/).map(s => s.trim()).filter(Boolean)
+      foamRoll = line.replace(/^Foam Roll:\s*/i, '').split(/[\/,]|\s—\s*8 passes each/).map(s => s.trim()).filter(Boolean)
     } else if (/^Static Stretch:/i.test(line)) {
-      const content = line.replace(/^Static Stretch:\s*/i, '')
-      staticStr = content.split(/[\/,—]/).map(s => s.trim()).filter(Boolean)
+      staticStr = line.replace(/^Static Stretch:\s*/i, '').split(/[\/,]|\s—\s*20 sec each/).map(s => s.trim()).filter(Boolean)
     } else if (/^Dynamic Warmup:/i.test(line)) {
-      const content = line.replace(/^Dynamic Warmup:\s*/i, '')
-      dynamicW = content.split(/[,\/]/).map(s => s.trim()).filter(Boolean)
+      dynamicW = line.replace(/^Dynamic Warmup:\s*/i, '').split(/[,\/]/).map(s => s.trim()).filter(Boolean)
     }
   })
 
@@ -1453,99 +1563,96 @@ function renderPreLift(preliftText) {
   if (!foamRoll.length && !staticStr.length && !dynamicW.length) {
     lines.forEach(l => { html += `<div style="font-size:0.78rem;color:#374151;padding:2px 0">${escHtml(l)}</div>` })
   }
+
   html += `</div>`
   return html
 }
 
-function renderDaySection(sectionText) {
+const DAY_THEMES = {
+  1: { bg: '#1e3a5f', noteColor: '#60a5fa' },
+  2: { bg: '#1e4a2f', noteColor: '#4ade80' },
+  3: { bg: '#3a1e5f', noteColor: '#a78bfa' },
+  4: { bg: '#5f3a1e', noteColor: '#fb923c' },
+}
+
+function buildDayCard(sectionText) {
   const lines = sectionText.split('\n')
-  // Get day title from first non-empty line
   const titleLine = lines.find(l => l.trim()) || ''
   const titleClean = titleLine.replace(/^##\s*|\*\*/g, '').trim()
-  // e.g. "DAY 1 — Lower Body: Strength"
+
   const dayMatch = titleClean.match(/^DAY\s+(\d+)\s*[—–-]?\s*(.*)/i)
   const dayNum = dayMatch ? parseInt(dayMatch[1]) : 1
-  const dayFocus = dayMatch ? dayMatch[2].trim() : titleClean
+  const dayFocusRaw = dayMatch ? dayMatch[2].trim() : titleClean
+  // Split focus from theme tag if present e.g. "Lower Body: Strength"
+  const focusParts = dayFocusRaw.split(/\s*[—–]\s*/)
+  const dayFocus = focusParts[0] || dayFocusRaw
 
-  const dayColors = {
-    1: { bg: '#1e3a5f', note: '#60a5fa' },
-    2: { bg: '#1e4a2f', note: '#4ade80' },
-    3: { bg: '#3a1e5f', note: '#a78bfa' },
-    4: { bg: '#5f3a1e', note: '#fb923c' },
-  }
-  const theme = dayColors[dayNum] || dayColors[1]
+  const theme = DAY_THEMES[dayNum] || { bg: '#1f2937', noteColor: '#9ca3af' }
 
   let html = `<div class="day-card">`
   html += `<div class="day-header" style="background:${theme.bg}">`
-  html += `<span class="day-header-title">Day ${dayNum}</span>`
-  if (dayFocus) html += `<span class="day-header-focus">${escHtml(dayFocus)}</span>`
+  html += `<span class="day-header-num">Day ${dayNum}</span>`
+  if (dayFocus) html += `<span class="day-header-title">${escHtml(dayFocus)}</span>`
   html += `</div>`
   html += `<div class="day-body">`
 
-  // Process body: find speed/COD block, warmup additions, then the table
+  // Collect lines after title
   const bodyLines = lines.slice(1)
 
-  // Collect bullet list sections that appear before the table
-  let speedLines = []
-  let warmupAddLines = []
-  let inSpeedBlock = false
-  let inWarmupBlock = false
-  let tableStartIdx = -1
-  let tableEndIdx = -1
-  let tableLines = []
-
   // Find the markdown table
+  let tableStartIdx = -1
+  let tableLines = []
   let inTable = false
   bodyLines.forEach((line, idx) => {
     if (line.trim().startsWith('|')) {
       if (!inTable) { inTable = true; tableStartIdx = idx }
       tableLines.push(line)
-      tableEndIdx = idx
     } else {
       if (inTable) inTable = false
     }
   })
 
-  // Process lines before the table
-  bodyLines.slice(0, tableStartIdx > 0 ? tableStartIdx : bodyLines.length).forEach(line => {
+  // Process pre-table lines for Speed/COD and warmup additions
+  const preBuf = bodyLines.slice(0, tableStartIdx >= 0 ? tableStartIdx : bodyLines.length)
+  let speedLines = []
+  let warmupLines = []
+  let inSpeed = false, inWarmup = false
+
+  preBuf.forEach(line => {
     const t = line.trim()
-    if (!t) { inSpeedBlock = false; inWarmupBlock = false; return }
-    if (/\*\*Speed\s*\/\s*COD\*\*|Speed\s*\/\s*COD|Speed &amp; COD/i.test(t)) {
-      inSpeedBlock = true; inWarmupBlock = false; return
+    if (!t) { inSpeed = false; inWarmup = false; return }
+    if (/\*\*Speed\s*[\/&]\s*COD\*\*|Speed\s*[\/&]\s*COD/i.test(t)) {
+      inSpeed = true; inWarmup = false; return
     }
     if (/\*\*Day[- ]specific warmup|Day[- ]specific warmup/i.test(t)) {
-      inWarmupBlock = true; inSpeedBlock = false; return
+      inWarmup = true; inSpeed = false; return
     }
-    if (inSpeedBlock && (t.startsWith('-') || t.startsWith('*'))) {
+    if (inSpeed && (t.startsWith('-') || t.startsWith('*'))) {
       speedLines.push(t.replace(/^[-*]\s*/, ''))
-    } else if (inWarmupBlock && (t.startsWith('-') || t.startsWith('*'))) {
-      warmupAddLines.push(t.replace(/^[-*]\s*/, ''))
+    } else if (inWarmup && (t.startsWith('-') || t.startsWith('*'))) {
+      warmupLines.push(t.replace(/^[-*]\s*/, ''))
     }
   })
 
-  // Render speed block
   if (speedLines.length) {
     html += `<div class="speed-block">`
-    html += `<div class="speed-block-title"><span>&#9889;</span> Speed / COD</div>`
-    html += `<ul>`
+    html += `<div class="speed-block-title">Speed / COD</div><ul>`
     speedLines.forEach(l => { html += `<li>${escHtml(l)}</li>` })
     html += `</ul></div>`
   }
 
-  // Render warmup additions
-  if (warmupAddLines.length) {
+  if (warmupLines.length) {
     html += `<div class="warmup-additions">`
-    html += `<div class="warmup-additions-title">Day Warmup Additions</div>`
-    html += `<ul>`
-    warmupAddLines.forEach(l => { html += `<li>${escHtml(l)}</li>` })
+    html += `<div class="warmup-additions-title">Day Warmup Additions</div><ul>`
+    warmupLines.forEach(l => { html += `<li>${escHtml(l)}</li>` })
     html += `</ul></div>`
   }
 
-  // Render table
+  // Render exercise table
   if (tableLines.length >= 3) {
     const parsed = parseMarkdownTable(tableLines.join('\n'))
     if (parsed) {
-      html += renderExerciseTable(parsed, theme.note)
+      html += buildExerciseTable(parsed, theme.noteColor)
     }
   }
 
@@ -1553,149 +1660,112 @@ function renderDaySection(sectionText) {
   return html
 }
 
-function renderExerciseTable(parsed, noteColor) {
+function buildExerciseTable(parsed, noteColor) {
   const { headers, rows } = parsed
 
-  // Determine column indices by header name
-  const hIdx = {}
-  headers.forEach((h, i) => {
-    const norm = h.toUpperCase().replace(/\s+/g, ' ').trim()
-    hIdx[norm] = i
-  })
+  // Find column indices by fuzzy header matching
+  function findCol(candidates) {
+    for (const c of candidates) {
+      const norm = c.toUpperCase().replace(/[×*]/g, 'x').replace(/\s+/g, ' ').trim()
+      const idx = headers.findIndex(h => {
+        const hn = h.toUpperCase().replace(/[×*]/g, 'x').replace(/\s+/g, ' ').trim()
+        return hn === norm
+      })
+      if (idx >= 0) return idx
+    }
+    return -1
+  }
 
-  // Build week column groups: find WK1–WK4 columns
+  const numIdx  = findCol(['#', 'NUM', 'NO'])
+  const exIdx   = findCol(['EXERCISE', 'EXERCISE NAME'])
+  const noteIdx = findCol(['COACHING NOTE', 'COACHING NOTES', 'NOTE', 'NOTES'])
+
   const wkGroups = []
   for (let w = 1; w <= 4; w++) {
-    const pct   = findColIdx(headers, [`WK${w} %`, `WK${w}%`])
-    const sets  = findColIdx(headers, [`WK${w} SETS×REPS`, `WK${w} SETS\u00D7REPS`, `WK${w} SETS*REPS`, `WK${w}SETS×REPS`])
-    const wt    = findColIdx(headers, [`WK${w} WT NOTE`, `WK${w} WT`, `WK${w}WT NOTE`])
+    const pct  = findCol([`WK${w} %`, `WK${w}%`, `WK ${w} %`])
+    const sets = findCol([`WK${w} SETSxREPS`, `WK${w} SETS×REPS`, `WK${w} SETS*REPS`, `WK${w}SETSxREPS`])
+    const wt   = findCol([`WK${w} WT NOTE`, `WK${w} WT`, `WK${w}WT NOTE`, `WK${w} WTNOTE`])
     wkGroups.push({ w, pct, sets, wt })
   }
 
-  const numIdx = findColIdx(headers, ['#', 'NUM', 'NO'])
-  const exIdx  = findColIdx(headers, ['EXERCISE', 'EXERCISE NAME'])
-  const noteIdx= findColIdx(headers, ['COACHING NOTE', 'NOTE', 'COACHING NOTES'])
-  const wkBg = ['wk1-bg', 'wk2-bg', 'wk3-bg', 'wk4-bg']
+  const wkBg    = ['wk1-bg', 'wk2-bg', 'wk3-bg', 'wk4-bg']
+  const wkHdr   = ['wk1-h',  'wk2-h',  'wk3-h',  'wk4-h' ]
+  const wkLabel = ['WK 1', 'WK 2', 'WK 3', 'WK 4']
 
-  let html = `<div class="ex-table-wrap"><table class="ex-table"><thead><tr>`
+  // Count visible week columns (with pct hidden)
+  // Each week = 2 cols: SETS×REPS + WT NOTE (% col hidden from display but included in download)
+  const hasAnyPct = wkGroups.some(g => g.pct >= 0)
 
-  // Header: # | EXERCISE | [WK1: %, SETS, WT] x4 | COACHING NOTE
-  html += `<th style="width:32px">#</th>`
-  html += `<th class="ex-col" style="min-width:130px">Exercise</th>`
+  let html = `<div class="ex-table-wrap"><table class="ex-table">`
+  html += `<colgroup>`
+  html += `<col style="width:36px">` // #
+  html += `<col style="min-width:160px">` // Exercise
+  wkGroups.forEach(() => {
+    html += `<col style="width:72px">` // SETS×REPS
+    html += `<col style="width:80px">` // WT NOTE
+  })
+  html += `<col style="min-width:110px">` // Coaching note
+  html += `</colgroup>`
+
+  html += `<thead>`
+
+  // Row 1: week group headers spanning 2 cols each
+  html += `<tr class="wk-group-row">`
+  html += `<th colspan="2" style="background:#f3f4f6;color:#6b7280"></th>` // # + Exercise
+  wkGroups.forEach(({ w }) => {
+    html += `<th colspan="2" class="${wkHdr[w-1]}">${wkLabel[w-1]}</th>`
+  })
+  html += `<th style="background:#f3f4f6;color:#6b7280"></th>`
+  html += `</tr>`
+
+  // Row 2: column headers
+  html += `<tr class="col-header">`
+  html += `<th style="width:36px;text-align:center">#</th>`
+  html += `<th class="ex-col">Exercise</th>`
   wkGroups.forEach(({ w }) => {
     const bg = wkBg[w - 1]
-    html += `<th class="${bg}" style="width:32px">W${w}%</th>`
-    html += `<th class="${bg}" style="width:68px">W${w} Sets</th>`
-    html += `<th class="${bg}" style="width:60px">W${w} Wt</th>`
+    html += `<th class="${bg}" style="width:72px">Sets x Reps</th>`
+    html += `<th class="${bg}" style="width:80px">Wt / Note</th>`
   })
-  html += `<th style="min-width:90px;text-align:right">Coaching Note</th>`
-  html += `</tr></thead><tbody>`
+  html += `<th class="note-col">Coaching Note</th>`
+  html += `</tr>`
+  html += `</thead>`
 
+  html += `<tbody>`
   rows.forEach(row => {
     if (!row.length) return
-    const numVal = numIdx >= 0 ? (row[numIdx] || '') : (row[0] || '')
-    const exVal  = exIdx  >= 0 ? (row[exIdx]  || '') : (row[1] || '')
-    const noteVal= noteIdx >= 0 ? (row[noteIdx] || '') : (row[row.length - 1] || '')
+    const numVal  = numIdx  >= 0 ? (row[numIdx]  || '') : (row[0] || '')
+    const exVal   = exIdx   >= 0 ? (row[exIdx]   || '') : (row[1] || '')
+    const noteVal = noteIdx >= 0 ? (row[noteIdx] || '') : (row[row.length - 1] || '')
 
     html += `<tr>`
-    html += `<td style="text-align:center">${renderNumBadge(numVal)}</td>`
+    html += `<td style="text-align:center">${buildNumBadge(numVal)}</td>`
     html += `<td class="ex-col">${escHtml(exVal)}</td>`
 
     wkGroups.forEach(({ w, pct, sets, wt }) => {
       const bg = wkBg[w - 1]
-      const pctVal  = pct  >= 0 ? (row[pct]  || '—') : '—'
       const setsVal = sets >= 0 ? (row[sets] || '') : ''
       const wtVal   = wt   >= 0 ? (row[wt]   || '') : ''
+      const isAdd   = /ADD|add if/i.test(wtVal)
 
-      html += `<td class="pct-cell ${bg}">${escHtml(pctVal)}</td>`
       html += `<td class="${bg}"><span class="setsreps">${escHtml(setsVal)}</span></td>`
-      html += `<td class="${bg}"><span class="wt-note${/ADD|add if/i.test(wtVal) ? ' add-note' : ''}">${escHtml(wtVal)}</span></td>`
+      html += `<td class="${bg}"><span class="wt-note${isAdd ? ' add-note' : ''}">${escHtml(wtVal)}</span></td>`
     })
 
-    html += `<td class="coaching-note" style="color:${noteColor}">${escHtml(noteVal)}</td>`
+    html += `<td class="note-col" style="color:${noteColor}">${escHtml(noteVal)}</td>`
     html += `</tr>`
   })
-
   html += `</tbody></table></div>`
   return html
 }
 
-function findColIdx(headers, candidates) {
-  for (const candidate of candidates) {
-    const norm = candidate.toUpperCase().replace(/\s+/g, ' ').trim()
-    const idx = headers.findIndex(h => h.toUpperCase().replace(/\s+/g, ' ').trim() === norm)
-    if (idx >= 0) return idx
-  }
-  return -1
-}
-
-function renderNumBadge(val) {
+function buildNumBadge(val) {
   if (!val) return ''
   const v = val.trim()
-  // Check superset group
-  if (/^3[A-C]$/i.test(v)) return `<span class="num-badge badge-amber">${escHtml(v)}</span>`
-  if (/^4[A-C]$/i.test(v)) return `<span class="num-badge badge-green">${escHtml(v)}</span>`
-  if (/^[12]$/.test(v))    return `<span class="num-badge badge-primary">${escHtml(v)}</span>`
+  if (/^3[A-Ca-c]$/.test(v)) return `<span class="num-badge badge-amber">${escHtml(v)}</span>`
+  if (/^4[A-Ca-c]$/.test(v)) return `<span class="num-badge badge-green">${escHtml(v)}</span>`
+  if (/^[12]$/.test(v))      return `<span class="num-badge badge-primary">${escHtml(v)}</span>`
   return `<span class="num-badge badge-default">${escHtml(v)}</span>`
-}
-
-function renderReasoning(parsed) {
-  const text = parsed.reasoning || ''
-  if (!text) return '<p style="color:#9ca3af;font-size:0.82rem;padding:16px">No reasoning available.</p>'
-
-  // Split on ## RED FLAGS or ## RED FLAGS / CAVEATS
-  const flagsMatch = text.search(/^## RED FLAGS/im)
-  const reasoningText = flagsMatch > 0 ? text.slice(0, flagsMatch).trim() : text
-  const flagsText = flagsMatch > 0 ? text.slice(flagsMatch).trim() : ''
-
-  // Clean up the reasoning header line
-  const reasoningBody = reasoningText.replace(/^## REASONING\s*/im, '').trim()
-
-  let html = ''
-
-  // Reasoning card
-  html += `<div class="reasoning-card">`
-  html += `<h3>Reasoning</h3>`
-  const reasoningParas = reasoningBody.split(/\n\n+/).filter(p => p.trim())
-  reasoningParas.forEach(para => {
-    const cleaned = para.trim().replace(/\n/g, ' ')
-    if (cleaned) html += `<p>${escHtml(cleaned)}</p>`
-  })
-  html += `</div>`
-
-  // Red flags card
-  if (flagsText) {
-    html += `<div class="red-flags-card">`
-    html += `<h3>Red Flags / Caveats</h3>`
-    const flagLines = flagsText.replace(/^## RED FLAGS[^\n]*/im, '').trim().split('\n')
-
-    let hasContent = false
-    let bullets = []
-    flagLines.forEach(line => {
-      const t = line.trim()
-      if (!t) return
-      if (t.startsWith('-') || t.startsWith('*') || t.startsWith('•')) {
-        bullets.push(t.replace(/^[-*•]\s*/, ''))
-      } else if (t && !t.startsWith('#')) {
-        bullets.push(t)
-      }
-    })
-
-    if (bullets.length === 0 || bullets.every(b => /no significant red flags/i.test(b))) {
-      html += `<span class="no-flags">&#10003; No significant red flags for this profile</span>`
-    } else {
-      bullets.forEach(b => {
-        if (b) { html += `<div class="flag-item">${escHtml(b)}</div>`; hasContent = true }
-      })
-      if (!hasContent) {
-        html += `<span class="no-flags">&#10003; No significant red flags for this profile</span>`
-      }
-    }
-
-    html += `</div>`
-  }
-
-  return html
 }
 
 function escHtml(str) {
