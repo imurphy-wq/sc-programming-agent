@@ -4,6 +4,26 @@ import { athleteFormSchema } from '@/lib/validation'
 import { buildSystemPrompt, buildUserMessage } from '@/lib/systemPrompt'
 import type { AthleteFormData } from '@/lib/types'
 
+const ALLOWED_ORIGINS = [
+  'https://imurphy-wq.github.io',
+  'http://localhost:3000',
+  'http://localhost:8080',
+]
+
+function corsHeaders(origin: string | null) {
+  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  }
+}
+
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin')
+  return new NextResponse(null, { status: 204, headers: corsHeaders(origin) })
+}
+
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
@@ -84,11 +104,13 @@ export async function POST(request: NextRequest) {
     },
   })
 
+  const origin = request.headers.get('origin')
   return new Response(stream, {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'no-cache',
       'X-Content-Type-Options': 'nosniff',
+      ...corsHeaders(origin),
     },
   })
 }
