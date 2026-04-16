@@ -4,89 +4,696 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>S&amp;C Programming Agent</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    /* Markdown output styling */
-    #output h2 { font-size: 1.1rem; font-weight: 700; color: #111827; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.4rem; margin: 1.4rem 0 0.6rem; }
-    #output h3 { font-size: 0.95rem; font-weight: 600; color: #374151; margin: 1rem 0 0.4rem; }
-    #output p  { font-size: 0.875rem; color: #374151; margin: 0.5rem 0; line-height: 1.6; }
-    #output ul, #output ol { font-size: 0.875rem; color: #374151; margin: 0.4rem 0 0.4rem 1.2rem; }
-    #output li { margin: 0.2rem 0; }
-    #output strong { font-weight: 600; color: #111827; }
-    #output pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.75rem; margin: 0.75rem 0; }
-    #output code { background: #f1f5f9; color: #0f172a; padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-size: 0.75rem; }
-    #output pre code { background: none; color: inherit; padding: 0; }
-    /* Table styling */
-    #output table { width: 100%; border-collapse: collapse; font-size: 0.72rem; margin: 0.75rem 0; overflow-x: auto; display: block; }
-    #output th { background: #f1f5f9; font-weight: 600; color: #374151; padding: 0.4rem 0.5rem; text-align: left; border: 1px solid #e2e8f0; white-space: nowrap; }
-    #output td { padding: 0.35rem 0.5rem; border: 1px solid #e2e8f0; color: #1e293b; vertical-align: top; }
-    #output tr:nth-child(even) td { background: #f8fafc; }
-    #output hr { border: none; border-top: 1px solid #e5e7eb; margin: 1rem 0; }
-    #output blockquote { border-left: 4px solid #93c5fd; background: #eff6ff; padding: 0.5rem 0.75rem; border-radius: 0 0.25rem 0.25rem 0; font-size: 0.875rem; color: #1e40af; margin: 0.5rem 0; }
-    /* Streaming cursor */
-    .cursor { display: inline-block; width: 2px; height: 1em; background: #2563eb; margin-left: 2px; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f7;
+      min-height: 100vh;
+      color: #1a1f2e;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      background: #1a1f2e;
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .site-header h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .site-header span {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.5);
+      font-weight: 400;
+    }
+
+    /* ── Layout ── */
+    .main-layout {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* ── Card base ── */
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    /* ── Form ── */
+    .form-card {
+      padding: 20px;
+    }
+    .form-card h2 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6b7280;
+      margin-bottom: 16px;
+    }
+    .form-section {
+      margin-bottom: 14px;
+    }
+    .form-section + .form-section {
+      border-top: 1px solid #f3f4f6;
+      padding-top: 14px;
+    }
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+    label.field-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+    .req { color: #ef4444; }
+    input[type=text], input[type=number], select, textarea {
+      width: 100%;
+      font-size: 0.82rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 7px 10px;
+      color: #1a1f2e;
+      background: white;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+      font-family: inherit;
+    }
+    input[type=text]:focus, input[type=number]:focus, select:focus, textarea:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+    textarea { resize: vertical; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .field { margin-bottom: 10px; }
+    .field:last-child { margin-bottom: 0; }
+
+    /* Maxes inline layout */
+    .maxes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+    .max-row { display: flex; align-items: center; gap: 8px; }
+    .max-row label { font-size: 0.72rem; color: #6b7280; white-space: nowrap; flex: 0 0 80px; }
+    .max-row input { flex: 1; }
+
+    /* Collapsible optional */
+    .collapsible-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #9ca3af;
+      width: 100%;
+      text-align: left;
+    }
+    .collapsible-toggle:hover { color: #6b7280; }
+    .toggle-icon {
+      display: inline-block;
+      transition: transform 0.2s;
+      font-style: normal;
+      font-size: 0.65rem;
+    }
+    .toggle-icon.open { transform: rotate(90deg); }
+    .collapsible-body { display: none; margin-top: 10px; }
+    .collapsible-body.open { display: block; }
+
+    /* Error */
+    .form-error {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      color: #dc2626;
+      margin-top: 12px;
+    }
+
+    /* Generate button */
+    .generate-btn {
+      width: 100%;
+      background: #1a1f2e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.15s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+    .generate-btn:hover:not(:disabled) { background: #2d3448; }
+    .generate-btn:active:not(:disabled) { transform: translateY(1px); }
+    .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Output column ── */
+    .output-col {
+      position: sticky;
+      top: 24px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+    }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.85rem; color: #6b7280; line-height: 1.6; }
+    .empty-state small { font-size: 0.75rem; color: #9ca3af; margin-top: 6px; display: block; }
+
+    /* Loading state */
+    .loading-state {
+      display: none;
+      padding: 48px 24px;
+      text-align: center;
+    }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state p { font-size: 0.85rem; color: #4b5563; font-weight: 500; }
+    .loading-state small { font-size: 0.75rem; color: #9ca3af; margin-top: 6px; display: block; }
+
+    /* Progress dots */
+    .progress-dots { display: flex; gap: 6px; justify-content: center; margin-top: 12px; }
+    .progress-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #c7d2fe;
+      animation: dot-pulse 1.4s ease-in-out infinite;
+    }
+    .progress-dot:nth-child(2) { animation-delay: 0.2s; }
+    .progress-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dot-pulse { 0%,80%,100% { transform: scale(0.8); opacity: 0.5; } 40% { transform: scale(1.2); opacity: 1; } }
+
+    /* Error state */
+    .output-error {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .output-error strong { font-size: 0.85rem; color: #dc2626; display: block; }
+    .output-error span { font-size: 0.82rem; color: #b91c1c; margin-top: 4px; display: block; }
+
+    /* Tab container */
+    .tab-container { display: none; }
+    .tab-container.visible { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Tab header */
+    .tab-header {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 0;
+      border-bottom: 2px solid #e5e7eb;
+      padding: 0 4px;
+      background: white;
+      border-radius: 10px 10px 0 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .tab-btn {
+      padding: 12px 18px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #6b7280;
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab-btn:hover { color: #374151; }
+    .tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+    .tab-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 8px;
+    }
+    .streaming-badge {
+      font-size: 0.72rem;
+      color: #6366f1;
+      font-weight: 600;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .download-btn {
+      font-size: 0.75rem;
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+      background: white;
+      border-radius: 5px;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .download-btn:hover { background: #f9fafb; }
+
+    /* Tab panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Live streaming view */
+    .stream-panel {
+      background: white;
+      border-radius: 0 0 10px 10px;
+      padding: 16px;
+      max-height: 72vh;
+      overflow-y: auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .stream-text {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.72rem;
+      color: #374151;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .stream-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 0.9em;
+      background: #6366f1;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* Rendered program panel */
+    .program-panel {
+      background: #f8f9fc;
+      border-radius: 0 0 10px 10px;
+      padding: 16px;
+      max-height: 72vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* ── Program Header card ── */
+    .prog-header-card {
+      background: #1a1f2e;
+      color: white;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 14px;
+    }
+    .prog-header-card .prog-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      margin-bottom: 8px;
+    }
+    .prog-header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .prog-meta-badge {
+      background: rgba(255,255,255,0.12);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.85);
+      font-weight: 500;
+    }
+    .prog-maxes-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .prog-max-badge {
+      background: rgba(99,102,241,0.25);
+      border: 1px solid rgba(99,102,241,0.35);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 0.7rem;
+      color: #c7d2fe;
+      font-weight: 600;
+    }
+
+    /* ── Daily Pre-Lift card ── */
+    .prelift-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+    .prelift-card .prelift-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+    .prelift-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.78rem;
+    }
+    .prelift-row:last-child { margin-bottom: 0; }
+    .prelift-row-label {
+      font-weight: 600;
+      color: #374151;
+      flex: 0 0 120px;
+      font-size: 0.72rem;
+    }
+    .prelift-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .prelift-pill {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      color: #0369a1;
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: 0.68rem;
+      font-weight: 500;
+    }
+
+    /* ── Day card ── */
+    .day-card {
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .day-header {
+      padding: 10px 16px;
+      color: white;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .day-header-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+    .day-header-focus {
+      font-size: 0.72rem;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .day-body { padding: 12px 14px; }
+
+    /* Speed/COD block */
+    .speed-block {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .speed-block-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #166534;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .speed-block ul {
+      list-style: none;
+      padding: 0;
+    }
+    .speed-block li {
+      font-size: 0.76rem;
+      color: #15803d;
+      padding: 2px 0;
+    }
+    .speed-block li::before { content: "→ "; font-weight: 700; }
+
+    /* Day warmup additions */
+    .warmup-additions {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .warmup-additions-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #0369a1;
+      margin-bottom: 6px;
+    }
+    .warmup-additions ul { list-style: none; padding: 0; }
+    .warmup-additions li {
+      font-size: 0.76rem;
+      color: #0c4a6e;
+      padding: 2px 0;
+    }
+    .warmup-additions li::before { content: "• "; }
+
+    /* Exercise table */
+    .ex-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .ex-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.73rem;
+      min-width: 820px;
+    }
+    .ex-table th {
+      padding: 6px 5px;
+      font-size: 0.63rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      border-bottom: 2px solid #e5e7eb;
+      white-space: nowrap;
+      text-align: center;
+    }
+    .ex-table th.ex-col { text-align: left; }
+    .ex-table td {
+      padding: 6px 5px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+      text-align: center;
+    }
+    .ex-table td.ex-col { text-align: left; font-weight: 600; color: #1a1f2e; min-width: 140px; }
+    .ex-table tr:last-child td { border-bottom: none; }
+    /* Weekly column shading */
+    .wk1-bg { background: #fafafa; }
+    .wk2-bg { background: #f8f9ff; }
+    .wk3-bg { background: #fafafa; }
+    .wk4-bg { background: #f8f9ff; }
+    .ex-table th.wk1-bg, .ex-table th.wk2-bg, .ex-table th.wk3-bg, .ex-table th.wk4-bg {}
+    /* Sets/reps cells */
+    .setsreps { font-size: 0.82rem; font-weight: 700; color: #1a1f2e; white-space: nowrap; }
+    .pct-cell { font-size: 0.68rem; color: #9ca3af; }
+    .wt-note { font-size: 0.68rem; font-style: italic; color: #6b7280; white-space: nowrap; }
+    .wt-note.add-note { color: #16a34a; font-weight: 600; }
+    .coaching-note { font-size: 0.7rem; font-style: italic; text-align: right; min-width: 100px; }
+
+    /* # badge */
+    .num-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .badge-primary { background: #dbeafe; color: #1d4ed8; }
+    .badge-amber { background: #fef3c7; color: #b45309; }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-default { background: #f3f4f6; color: #374151; }
+
+    /* ── Reasoning tab ── */
+    .reasoning-panel {
+      background: #f8f9fc;
+      border-radius: 0 0 10px 10px;
+      padding: 16px;
+      max-height: 72vh;
+      overflow-y: auto;
+    }
+    .reasoning-card {
+      background: #fffbf0;
+      border: 1px solid #fed7aa;
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+    .reasoning-card h3 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #92400e;
+      margin-bottom: 12px;
+    }
+    .reasoning-card p {
+      font-size: 0.82rem;
+      color: #44403c;
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+    .reasoning-card p:last-child { margin-bottom: 0; }
+    .red-flags-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 18px 20px;
+    }
+    .red-flags-card h3 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+    .flag-item {
+      border-left: 3px solid #f59e0b;
+      background: #fffbeb;
+      border-radius: 0 5px 5px 0;
+      padding: 8px 12px;
+      margin-bottom: 7px;
+      font-size: 0.8rem;
+      color: #44403c;
+      line-height: 1.5;
+    }
+    .flag-item:last-child { margin-bottom: 0; }
+    .no-flags {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* Scrollbar styling */
+    .program-panel::-webkit-scrollbar,
+    .stream-panel::-webkit-scrollbar,
+    .reasoning-panel::-webkit-scrollbar { width: 5px; }
+    .program-panel::-webkit-scrollbar-track,
+    .stream-panel::-webkit-scrollbar-track,
+    .reasoning-panel::-webkit-scrollbar-track { background: transparent; }
+    .program-panel::-webkit-scrollbar-thumb,
+    .stream-panel::-webkit-scrollbar-thumb,
+    .reasoning-panel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+    @media (max-width: 900px) {
+      .main-layout { grid-template-columns: 1fr; }
+      .output-col { position: static; }
+    }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen antialiased">
+<body>
 
-  <!-- Header -->
-  <div class="bg-white border-b border-gray-200 shadow-sm">
-    <div class="max-w-5xl mx-auto px-4 py-5">
-      <div class="flex items-baseline gap-3">
-        <h1 class="text-2xl font-black text-gray-900 tracking-tight">S&amp;C Programming Agent</h1>
-        <span class="text-sm text-gray-500 font-medium">College Athlete Program Generator</span>
-      </div>
-      <p class="text-sm text-gray-500 mt-1">Describe what you want for your athlete → get a complete periodized program in your format.</p>
-    </div>
-  </div>
+  <header class="site-header">
+    <h1>S&amp;C Programming Agent</h1>
+    <span>College Athlete Program Generator</span>
+  </header>
 
-  <div class="max-w-5xl mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+  <div class="main-layout">
 
-      <!-- ── FORM ── -->
-      <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <h2 class="text-base font-bold text-gray-900">Athlete Intake</h2>
+    <!-- ── FORM ── -->
+    <div class="card form-card">
+      <h2>Athlete Intake</h2>
 
-        <!-- Outcome -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Outcome Goal <span class="text-red-500">*</span></label>
-          <textarea id="f-outcome" rows="3" placeholder='e.g. "I need him stronger off the line by fall camp. He's slow off the ball and gets pushed around."'
-            class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none resize-none"></textarea>
+      <!-- Outcome -->
+      <div class="form-section">
+        <div class="field">
+          <label class="field-label">Outcome Goal <span class="req">*</span></label>
+          <textarea id="f-outcome" rows="3"
+            placeholder='e.g. "I need him stronger off the line by fall camp. He&apos;s slow off the ball and gets pushed around."'></textarea>
         </div>
+      </div>
 
-        <!-- Sport & Schedule row -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Sport <span class="text-red-500">*</span></label>
-            <select id="f-sport" onchange="updatePositions()"
-              class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none bg-white">
+      <!-- Sport & Position -->
+      <div class="form-section">
+        <div class="grid-2">
+          <div class="field">
+            <label class="field-label">Sport <span class="req">*</span></label>
+            <select id="f-sport" onchange="updatePositions()">
               <option value="">Select sport...</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Position <span class="text-red-500">*</span></label>
-            <select id="f-position"
-              class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none bg-white">
+          <div class="field">
+            <label class="field-label">Position <span class="req">*</span></label>
+            <select id="f-position">
               <option value="">Select sport first</option>
             </select>
           </div>
         </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Season Phase <span class="text-red-500">*</span></label>
-            <select id="f-season" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none bg-white">
+        <div class="grid-2" style="margin-top:10px">
+          <div class="field">
+            <label class="field-label">Season Phase <span class="req">*</span></label>
+            <select id="f-season">
               <option value="off-season">Off-Season</option>
               <option value="pre-season">Pre-Season</option>
               <option value="in-season">In-Season</option>
               <option value="post-season">Post-Season</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Training Days / Week <span class="text-red-500">*</span></label>
-            <select id="f-days" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none bg-white">
+          <div class="field">
+            <label class="field-label">Days / Week <span class="req">*</span></label>
+            <select id="f-days">
               <option value="2">2 days</option>
               <option value="3">3 days</option>
               <option value="4" selected>4 days</option>
@@ -95,164 +702,163 @@
             </select>
           </div>
         </div>
-
-        <!-- Athlete profile -->
-        <div class="border-t border-gray-100 pt-4">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Athlete Profile</p>
-          <div class="grid grid-cols-3 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Height (ft) <span class="text-red-500">*</span></label>
-              <input id="f-ht-ft" type="number" min="4" max="8" placeholder="6"
-                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Height (in) <span class="text-red-500">*</span></label>
-              <input id="f-ht-in" type="number" min="0" max="11" placeholder="2"
-                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Body Weight (lbs) <span class="text-red-500">*</span></label>
-              <input id="f-bw" type="number" min="60" max="500" placeholder="190"
-                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none" />
-            </div>
-          </div>
-          <div class="mt-3">
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Training Age</label>
-            <select id="f-training-age" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none bg-white">
-              <option value="">Not specified</option>
-              <option value="novice">Novice (0–1 year structured training)</option>
-              <option value="intermediate">Intermediate (1–3 years)</option>
-              <option value="advanced">Advanced (3+ years consistent, programmatic)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Testing maxes -->
-        <div class="border-t border-gray-100 pt-4">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Testing Maxes <span class="text-gray-400 font-normal normal-case">(leave blank if untested)</span></p>
-          <div class="grid grid-cols-2 gap-x-4 gap-y-2">
-            <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-600 w-24 shrink-0">Squat (lbs)</label>
-              <input id="m-squat" type="number" min="0" max="2000" placeholder="—"
-                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
-            </div>
-            <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-600 w-24 shrink-0">Deadlift (lbs)</label>
-              <input id="m-dl" type="number" min="0" max="2000" placeholder="—"
-                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
-            </div>
-            <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-600 w-24 shrink-0">Bench (lbs)</label>
-              <input id="m-bench" type="number" min="0" max="2000" placeholder="—"
-                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
-            </div>
-            <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-600 w-24 shrink-0">Clean (lbs)</label>
-              <input id="m-clean" type="number" min="0" max="2000" placeholder="—"
-                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
-            </div>
-            <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-600 w-24 shrink-0">Vert (inches)</label>
-              <input id="m-vert" type="number" min="0" max="60" step="0.5" placeholder="—"
-                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
-            </div>
-            <div class="flex items-center gap-2">
-              <label class="text-xs text-gray-600 w-24 shrink-0">10-yd (sec)</label>
-              <input id="m-10yd" type="number" min="0" max="10" step="0.01" placeholder="—"
-                class="w-full text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
-            </div>
-            <div class="flex items-center gap-2 col-span-2">
-              <label class="text-xs text-gray-600 w-24 shrink-0">Pull-ups (max)</label>
-              <input id="m-pullups" type="number" min="0" max="100" placeholder="—"
-                class="w-32 text-sm border border-gray-200 rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-400 outline-none" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Context & constraints -->
-        <div class="border-t border-gray-100 pt-4">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Context &amp; Constraints <span class="text-gray-400 font-normal normal-case">(optional)</span></p>
-          <div class="space-y-3">
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Injury History / Current Limitations</label>
-              <textarea id="f-injury" rows="2" placeholder="e.g. ACL reconstruction left knee (18 months post-op, cleared). Prior shoulder labrum issue."
-                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none resize-none"></textarea>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Practice / Competition Schedule</label>
-              <textarea id="f-practice" rows="2" placeholder="e.g. Practice Mon/Wed/Fri 2 hrs. Games Saturday. Conference tournament last 3 weeks."
-                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none resize-none"></textarea>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Equipment Constraints</label>
-              <textarea id="f-equipment" rows="2" placeholder="e.g. No power rack — only dumbbells and cable machines available."
-                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none resize-none"></textarea>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Additional Notes</label>
-              <textarea id="f-notes" rows="2" placeholder="e.g. Athlete prefers morning sessions. Has limited ankle dorsiflexion — avoid deep squat variations."
-                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-blue-400 outline-none resize-none"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- Error display -->
-        <div id="form-error" class="hidden bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700"></div>
-
-        <!-- Submit -->
-        <button id="generate-btn" onclick="generateProgram()"
-          class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm py-2.5 rounded-lg transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-          <span id="btn-text">Generate Program</span>
-        </button>
       </div>
 
-      <!-- ── OUTPUT ── -->
-      <div class="lg:sticky lg:top-8">
-        <!-- Loading state -->
-        <div id="loading-state" class="hidden bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <div class="flex flex-col items-center gap-3">
-            <div class="w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin" style="border-width:3px"></div>
-            <p class="text-sm text-gray-600 font-medium">Building your program...</p>
-            <p class="text-xs text-gray-400">This takes 15–40 seconds. Program will stream in as it generates.</p>
+      <!-- Athlete Profile -->
+      <div class="form-section">
+        <div class="section-label">Athlete Profile</div>
+        <div class="grid-3" style="margin-bottom:10px">
+          <div class="field">
+            <label class="field-label">Height (ft) <span class="req">*</span></label>
+            <input id="f-ht-ft" type="number" min="4" max="8" placeholder="6" />
+          </div>
+          <div class="field">
+            <label class="field-label">Height (in)</label>
+            <input id="f-ht-in" type="number" min="0" max="11" placeholder="2" />
+          </div>
+          <div class="field">
+            <label class="field-label">BW (lbs) <span class="req">*</span></label>
+            <input id="f-bw" type="number" min="60" max="500" placeholder="190" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Training Age</label>
+          <select id="f-training-age">
+            <option value="">Not specified</option>
+            <option value="novice">Novice (0–1 year)</option>
+            <option value="intermediate">Intermediate (1–3 years)</option>
+            <option value="advanced">Advanced (3+ years)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Testing Maxes -->
+      <div class="form-section">
+        <div class="section-label">Testing Maxes <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:0.68rem;color:#c4c9d4">(leave blank if untested)</span></div>
+        <div class="maxes-grid">
+          <div class="max-row">
+            <label>Squat (lbs)</label>
+            <input id="m-squat" type="number" min="0" max="2000" placeholder="—" />
+          </div>
+          <div class="max-row">
+            <label>Deadlift (lbs)</label>
+            <input id="m-dl" type="number" min="0" max="2000" placeholder="—" />
+          </div>
+          <div class="max-row">
+            <label>Bench (lbs)</label>
+            <input id="m-bench" type="number" min="0" max="2000" placeholder="—" />
+          </div>
+          <div class="max-row">
+            <label>Clean (lbs)</label>
+            <input id="m-clean" type="number" min="0" max="2000" placeholder="—" />
+          </div>
+          <div class="max-row">
+            <label>Vert (in)</label>
+            <input id="m-vert" type="number" min="0" max="60" step="0.5" placeholder="—" />
+          </div>
+          <div class="max-row">
+            <label>10-yd (sec)</label>
+            <input id="m-10yd" type="number" min="0" max="10" step="0.01" placeholder="—" />
+          </div>
+          <div class="max-row" style="grid-column:1/-1">
+            <label>Pull-ups (max)</label>
+            <input id="m-pullups" type="number" min="0" max="100" placeholder="—" style="max-width:120px" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Optional fields (collapsible) -->
+      <div class="form-section">
+        <button class="collapsible-toggle" onclick="toggleOptional(this)" type="button">
+          <i class="toggle-icon">&#9658;</i>
+          Optional Fields
+        </button>
+        <div class="collapsible-body" id="optional-fields">
+          <div class="field">
+            <label class="field-label">Injury History / Current Limitations</label>
+            <textarea id="f-injury" rows="2"
+              placeholder="e.g. ACL reconstruction left knee (18 months post-op, cleared). Prior shoulder labrum issue."></textarea>
+          </div>
+          <div class="field">
+            <label class="field-label">Practice / Competition Schedule</label>
+            <textarea id="f-practice" rows="2"
+              placeholder="e.g. Practice Mon/Wed/Fri 2 hrs. Games Saturday."></textarea>
+          </div>
+          <div class="field">
+            <label class="field-label">Equipment Constraints</label>
+            <textarea id="f-equipment" rows="2"
+              placeholder="e.g. No power rack — only dumbbells and cable machines available."></textarea>
+          </div>
+          <div class="field">
+            <label class="field-label">Additional Notes</label>
+            <textarea id="f-notes" rows="2"
+              placeholder="e.g. Athlete prefers morning sessions. Limited ankle dorsiflexion."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-error" id="form-error"></div>
+
+      <button class="generate-btn" id="generate-btn" onclick="generateProgram()" type="button">
+        <span id="btn-text">Generate Program</span>
+      </button>
+    </div>
+
+    <!-- ── OUTPUT ── -->
+    <div class="output-col">
+
+      <div class="output-error card" id="output-error">
+        <strong>Error</strong>
+        <span id="output-error-msg"></span>
+      </div>
+
+      <!-- Empty state -->
+      <div class="card empty-state" id="empty-state">
+        <div class="empty-icon">&#127947;</div>
+        <p>Fill out the form and click <strong>Generate Program</strong> to get a complete periodized training program.</p>
+        <small>Programs match your template: 4-week blocks, Day 1–4 split, superset grouping, progressive loading.</small>
+      </div>
+
+      <!-- Loading state -->
+      <div class="card loading-state" id="loading-state">
+        <div class="spinner"></div>
+        <p>Building your program...</p>
+        <small>This takes 15–40 seconds. Program will stream in as it generates.</small>
+        <div class="progress-dots">
+          <div class="progress-dot"></div>
+          <div class="progress-dot"></div>
+          <div class="progress-dot"></div>
+        </div>
+      </div>
+
+      <!-- Tab container -->
+      <div class="tab-container" id="tab-container">
+        <div class="tab-header">
+          <button class="tab-btn active" id="tab-program-btn" onclick="switchTab('program')" type="button">Program</button>
+          <button class="tab-btn" id="tab-reasoning-btn" onclick="switchTab('reasoning')" type="button">Reasoning</button>
+          <div class="tab-actions">
+            <span class="streaming-badge" id="streaming-badge" style="display:none">● Generating...</span>
+            <button class="download-btn" id="download-btn" onclick="downloadProgram()" type="button" style="display:none">Download .md</button>
           </div>
         </div>
 
-        <!-- Error state -->
-        <div id="output-error" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
-          <p class="text-red-700 text-sm font-medium">Error</p>
-          <p id="output-error-msg" class="text-red-600 text-sm mt-1"></p>
+        <!-- Program tab: streaming view (shown while generating) -->
+        <div class="tab-panel active stream-panel" id="panel-stream">
+          <div class="stream-text" id="stream-text"></div><span class="stream-cursor" id="stream-cursor"></span>
         </div>
 
-        <!-- Program output -->
-        <div id="output-panel" class="hidden">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-              <h2 class="text-base font-bold text-gray-900">Generated Program</h2>
-              <span id="streaming-badge" class="hidden text-xs text-blue-600 font-medium animate-pulse">● Generating...</span>
-            </div>
-            <button id="download-btn" onclick="downloadProgram()" class="hidden text-xs text-gray-600 border border-gray-300 rounded px-3 py-1 hover:bg-gray-50 transition">
-              Download .md
-            </button>
-          </div>
-          <div class="bg-white border border-gray-200 rounded-xl p-5 overflow-x-auto">
-            <div id="output"></div>
-            <span id="cursor" class="cursor hidden"></span>
-          </div>
-        </div>
+        <!-- Program tab: rendered view (shown after done) -->
+        <div class="tab-panel program-panel" id="panel-program"></div>
 
-        <!-- Empty state -->
-        <div id="empty-state" class="bg-white rounded-xl border border-gray-200 p-8 text-center">
-          <div class="text-4xl mb-3">🏋️</div>
-          <p class="text-gray-500 text-sm">Fill out the form and click <strong>Generate Program</strong> to get a complete periodized training program.</p>
-          <p class="text-gray-400 text-xs mt-2">Programs match your established template: 4-week blocks, Day 1–4 split, superset grouping, progressive loading.</p>
-        </div>
+        <!-- Reasoning tab -->
+        <div class="tab-panel reasoning-panel" id="panel-reasoning"></div>
       </div>
 
     </div>
   </div>
 
 <script>
-// ─── Sports config ────────────────────────────────────────────────────────────
+// ─── Sports config ──────────────────────────────────────────────────────────
 const SPORTS = {
   'football':       { label: 'Football (American)', positions: ['QB','RB','FB','WR','TE','OL (Guard/Tackle)','OL (Center)','DL (DT)','DL (DE)','LB (ILB)','LB (OLB)','CB','Safety','K/P','ATH'] },
   'soccer-m':       { label: "Soccer (Men's)",       positions: ['GK','CB','LB/RB','CDM','CM','CAM','LW/RW','ST'] },
@@ -283,7 +889,7 @@ const SPORTS = {
   'other':          { label: 'Other (specify in notes)', positions: ['General'] },
 }
 
-// ─── System prompt ────────────────────────────────────────────────────────────
+// ─── System prompt ──────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are an expert collegiate strength and conditioning coach with the knowledge and programming philosophy of a top-tier college S&C coordinator. You have deep expertise across all college sports and write periodized training programs that coaches trust and use.
 
 ## YOUR PROGRAMMING PHILOSOPHY
@@ -474,16 +1080,16 @@ Dynamic Warmup: [Sport-specific: Scoops, Knee Pulls, Fig. 4s, Lat Lunges, Open/C
 
 Remember: You are writing programs for real athletes. Be conservative when uncertain. Flag rather than fabricate. A good program with visible reasoning beats a sophisticated program with hidden logic.`
 
-// ─── Config ───────────────────────────────────────────────────────────────────
+// ─── Config ─────────────────────────────────────────────────────────────────
 const API_URL = 'https://sc-programming-agent.vercel.app/api/generate'
 
-// ─── State ────────────────────────────────────────────────────────────────────
+// ─── State ───────────────────────────────────────────────────────────────────
 let fullText = ''
 let isStreaming = false
+let currentTab = 'program'
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
+// ─── Init ────────────────────────────────────────────────────────────────────
 ;(function init() {
-  // Populate sports dropdown
   const sportSel = document.getElementById('f-sport')
   Object.entries(SPORTS).forEach(([key, cfg]) => {
     const opt = document.createElement('option')
@@ -491,9 +1097,6 @@ let isStreaming = false
     opt.textContent = cfg.label
     sportSel.appendChild(opt)
   })
-
-  // Configure marked for GFM tables
-  marked.use({ gfm: true, breaks: false })
 })()
 
 function updatePositions() {
@@ -510,6 +1113,14 @@ function updatePositions() {
     opt.textContent = pos
     posSel.appendChild(opt)
   })
+}
+
+function toggleOptional(btn) {
+  const body = document.getElementById('optional-fields')
+  const icon = btn.querySelector('.toggle-icon')
+  const isOpen = body.classList.contains('open')
+  body.classList.toggle('open', !isOpen)
+  icon.classList.toggle('open', !isOpen)
 }
 
 function collectFormData() {
@@ -548,18 +1159,26 @@ function validate() {
   return errors
 }
 
+// ─── UI state ────────────────────────────────────────────────────────────────
 function setUIState(state) {
-  // states: idle | loading | streaming | done | error
-  document.getElementById('loading-state').classList.toggle('hidden', state !== 'loading')
-  document.getElementById('empty-state').classList.toggle('hidden', state !== 'idle')
-  document.getElementById('output-panel').classList.toggle('hidden', state === 'idle' || state === 'loading')
-  document.getElementById('streaming-badge').classList.toggle('hidden', state !== 'streaming')
-  document.getElementById('cursor').classList.toggle('hidden', state !== 'streaming')
-  document.getElementById('download-btn').classList.toggle('hidden', state !== 'done')
-  document.getElementById('output-error').classList.toggle('hidden', state !== 'error')
-
+  const loading = document.getElementById('loading-state')
+  const empty = document.getElementById('empty-state')
+  const tabs = document.getElementById('tab-container')
+  const streamBadge = document.getElementById('streaming-badge')
+  const cursor = document.getElementById('stream-cursor')
+  const dlBtn = document.getElementById('download-btn')
+  const errPanel = document.getElementById('output-error')
   const btn = document.getElementById('generate-btn')
   const btnText = document.getElementById('btn-text')
+
+  loading.style.display = state === 'loading' ? 'block' : 'none'
+  empty.style.display = state === 'idle' ? '' : 'none'
+  errPanel.style.display = state === 'error' ? '' : 'none'
+  tabs.classList.toggle('visible', state === 'streaming' || state === 'done')
+  streamBadge.style.display = state === 'streaming' ? '' : 'none'
+  cursor.style.display = state === 'streaming' ? '' : 'none'
+  dlBtn.style.display = state === 'done' ? '' : 'none'
+
   if (state === 'loading' || state === 'streaming') {
     btn.disabled = true
     btnText.textContent = state === 'loading' ? 'Connecting...' : 'Generating...'
@@ -572,10 +1191,35 @@ function setUIState(state) {
 function showFormError(msg) {
   const el = document.getElementById('form-error')
   el.textContent = msg
-  el.classList.remove('hidden')
-  setTimeout(() => el.classList.add('hidden'), 5000)
+  el.style.display = 'block'
+  setTimeout(() => { el.style.display = 'none' }, 5000)
 }
 
+function switchTab(tab) {
+  currentTab = tab
+  const programBtn = document.getElementById('tab-program-btn')
+  const reasoningBtn = document.getElementById('tab-reasoning-btn')
+  const streamPanel = document.getElementById('panel-stream')
+  const programPanel = document.getElementById('panel-program')
+  const reasoningPanel = document.getElementById('panel-reasoning')
+
+  programBtn.classList.toggle('active', tab === 'program')
+  reasoningBtn.classList.toggle('active', tab === 'reasoning')
+
+  if (tab === 'program') {
+    // If streaming, show stream; if done, show rendered
+    const isDone = document.getElementById('download-btn').style.display !== 'none'
+    streamPanel.classList.toggle('active', !isDone)
+    programPanel.classList.toggle('active', isDone)
+    reasoningPanel.classList.remove('active')
+  } else {
+    streamPanel.classList.remove('active')
+    programPanel.classList.remove('active')
+    reasoningPanel.classList.add('active')
+  }
+}
+
+// ─── Main generate function ───────────────────────────────────────────────────
 async function generateProgram() {
   if (isStreaming) return
 
@@ -584,8 +1228,19 @@ async function generateProgram() {
 
   isStreaming = true
   fullText = ''
-  document.getElementById('output').innerHTML = ''
+  document.getElementById('stream-text').textContent = ''
+  document.getElementById('panel-program').innerHTML = ''
+  document.getElementById('panel-reasoning').innerHTML = ''
   document.getElementById('output-error-msg').textContent = ''
+
+  // Reset tabs to program/stream view
+  currentTab = 'program'
+  document.getElementById('tab-program-btn').classList.add('active')
+  document.getElementById('tab-reasoning-btn').classList.remove('active')
+  document.getElementById('panel-stream').classList.add('active')
+  document.getElementById('panel-program').classList.remove('active')
+  document.getElementById('panel-reasoning').classList.remove('active')
+
   setUIState('loading')
 
   try {
@@ -604,13 +1259,26 @@ async function generateProgram() {
     setUIState('streaming')
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
+    const streamEl = document.getElementById('stream-text')
+    const streamPanel = document.getElementById('panel-stream')
 
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
       fullText += decoder.decode(value, { stream: true })
-      document.getElementById('output').innerHTML = marked.parse(fullText)
+      streamEl.textContent = fullText
+      // Auto-scroll stream panel
+      streamPanel.scrollTop = streamPanel.scrollHeight
     }
+
+    // Parse and render
+    const parsed = parseOutput(fullText)
+    document.getElementById('panel-program').innerHTML = renderProgram(parsed)
+    document.getElementById('panel-reasoning').innerHTML = renderReasoning(parsed)
+
+    // Switch to rendered program view
+    document.getElementById('panel-stream').classList.remove('active')
+    document.getElementById('panel-program').classList.add('active')
 
     setUIState('done')
   } catch (err) {
@@ -630,6 +1298,413 @@ function downloadProgram() {
   a.download = 'program.md'
   a.click()
   URL.revokeObjectURL(url)
+}
+
+// ─── Parsing ─────────────────────────────────────────────────────────────────
+
+function parseOutput(text) {
+  // Find where the program body begins (DAILY PRE-LIFT separator line)
+  const preLiftMatch = text.search(/─{3,}[\s\S]{0,30}?\n[^\n]*DAILY PRE-LIFT|^─{3,}\s*\n## DAILY PRE-LIFT|## DAILY PRE-LIFT/im)
+  const reasoningMatch = text.search(/^## REASONING/im)
+
+  let programHeader = ''
+  let reasoning = ''
+  let programBody = ''
+
+  if (preLiftMatch > 0) {
+    programHeader = text.slice(0, reasoningMatch > 0 ? reasoningMatch : 0).trim()
+    if (reasoningMatch > 0) {
+      reasoning = text.slice(reasoningMatch, preLiftMatch).trim()
+    }
+    programBody = text.slice(preLiftMatch).trim()
+  } else {
+    reasoning = text
+    programBody = ''
+  }
+
+  return { programHeader, reasoning, programBody }
+}
+
+function parseMarkdownTable(mdTable) {
+  const lines = mdTable.trim().split('\n').filter(l => l.includes('|'))
+  if (lines.length < 3) return null
+  const headers = lines[0].split('|').map(h => h.trim()).filter(Boolean)
+  const rows = lines.slice(2).map(l => l.split('|').map(c => c.trim()).filter(Boolean))
+  return { headers, rows }
+}
+
+// ─── Rendering ───────────────────────────────────────────────────────────────
+
+function renderProgram(parsed) {
+  let html = ''
+  if (parsed.programHeader) {
+    html += renderProgramHeader(parsed.programHeader)
+  }
+  if (parsed.programBody) {
+    html += renderProgramBody(parsed.programBody)
+  }
+  return html || '<p style="color:#9ca3af;font-size:0.82rem;padding:16px">No program content found.</p>'
+}
+
+function renderProgramHeader(headerText) {
+  // Extract lines from the ═══ block
+  const lines = headerText.split('\n').filter(l => l.trim() && !l.match(/^═+$/))
+  let title = ''
+  let metaBadges = []
+  let maxBadges = []
+
+  lines.forEach(line => {
+    const clean = line.replace(/^[═─]+\s*/, '').trim()
+    if (!clean) return
+    if (clean.startsWith('PROGRAM:') || clean.startsWith('PROGRAM ')) {
+      // Parse: PROGRAM: SPORT | Season: X | Block Y Phase Z
+      const parts = clean.replace(/^PROGRAM:\s*/i, '').split('|').map(p => p.trim())
+      title = parts[0] || clean
+      parts.slice(1).forEach(p => { if (p) metaBadges.push(escHtml(p)) })
+    } else if (clean.startsWith('Athlete Type:')) {
+      metaBadges.push(escHtml(clean))
+    } else if (clean.startsWith('Test Maxes:') || clean.startsWith('Test maxes:')) {
+      const maxPart = clean.replace(/^Test Maxes?:\s*/i, '')
+      maxPart.split('|').forEach(m => {
+        const t = m.trim()
+        if (t) maxBadges.push(escHtml(t))
+      })
+    } else {
+      metaBadges.push(escHtml(clean))
+    }
+  })
+
+  let html = `<div class="prog-header-card">`
+  html += `<div class="prog-title">${escHtml(title) || 'Program'}</div>`
+  if (metaBadges.length) {
+    html += `<div class="prog-header-meta">`
+    metaBadges.forEach(b => { html += `<span class="prog-meta-badge">${b}</span>` })
+    html += `</div>`
+  }
+  if (maxBadges.length) {
+    html += `<div class="prog-maxes-grid">`
+    maxBadges.forEach(b => { html += `<span class="prog-max-badge">${b}</span>` })
+    html += `</div>`
+  }
+  html += `</div>`
+  return html
+}
+
+function renderProgramBody(bodyText) {
+  let html = ''
+
+  // Extract and render daily pre-lift section
+  const preliftMatch = bodyText.match(/(?:─+\s*\n)?## DAILY PRE-LIFT[^\n]*\n([\s\S]*?)(?=\n─+|\n## DAY|\n\*\*DAY|$)/i)
+  if (preliftMatch) {
+    html += renderPreLift(preliftMatch[0])
+  }
+
+  // Split on DAY sections
+  // Match ## DAY or bold **DAY headers
+  const daySections = bodyText.split(/(?=\n## DAY\s|\n\*\*DAY\s)/)
+  daySections.forEach(section => {
+    const trimmed = section.trim()
+    if (/^## DAY\s/i.test(trimmed) || /^\*\*DAY\s/i.test(trimmed)) {
+      html += renderDaySection(trimmed)
+    }
+  })
+
+  return html
+}
+
+function renderPreLift(preliftText) {
+  const lines = preliftText.split('\n')
+    .map(l => l.trim())
+    .filter(l => l && !l.match(/^─+$/) && !l.match(/^## DAILY PRE-LIFT/i))
+
+  let foamRoll = [], staticStr = [], dynamicW = []
+
+  lines.forEach(line => {
+    if (/^Foam Roll:/i.test(line)) {
+      const content = line.replace(/^Foam Roll:\s*/i, '')
+      foamRoll = content.split(/[\/,—]/).map(s => s.trim()).filter(Boolean)
+    } else if (/^Static Stretch:/i.test(line)) {
+      const content = line.replace(/^Static Stretch:\s*/i, '')
+      staticStr = content.split(/[\/,—]/).map(s => s.trim()).filter(Boolean)
+    } else if (/^Dynamic Warmup:/i.test(line)) {
+      const content = line.replace(/^Dynamic Warmup:\s*/i, '')
+      dynamicW = content.split(/[,\/]/).map(s => s.trim()).filter(Boolean)
+    }
+  })
+
+  let html = `<div class="prelift-card">`
+  html += `<div class="prelift-title">Daily Pre-Lift — All Days</div>`
+
+  if (foamRoll.length) {
+    html += `<div class="prelift-row"><span class="prelift-row-label">Foam Roll</span><div class="prelift-pills">`
+    foamRoll.forEach(item => { html += `<span class="prelift-pill">${escHtml(item)}</span>` })
+    html += `</div></div>`
+  }
+  if (staticStr.length) {
+    html += `<div class="prelift-row"><span class="prelift-row-label">Static Stretch</span><div class="prelift-pills">`
+    staticStr.forEach(item => { html += `<span class="prelift-pill">${escHtml(item)}</span>` })
+    html += `</div></div>`
+  }
+  if (dynamicW.length) {
+    html += `<div class="prelift-row"><span class="prelift-row-label">Dynamic Warmup</span><div class="prelift-pills">`
+    dynamicW.forEach(item => { html += `<span class="prelift-pill">${escHtml(item)}</span>` })
+    html += `</div></div>`
+  }
+  if (!foamRoll.length && !staticStr.length && !dynamicW.length) {
+    lines.forEach(l => { html += `<div style="font-size:0.78rem;color:#374151;padding:2px 0">${escHtml(l)}</div>` })
+  }
+  html += `</div>`
+  return html
+}
+
+function renderDaySection(sectionText) {
+  const lines = sectionText.split('\n')
+  // Get day title from first non-empty line
+  const titleLine = lines.find(l => l.trim()) || ''
+  const titleClean = titleLine.replace(/^##\s*|\*\*/g, '').trim()
+  // e.g. "DAY 1 — Lower Body: Strength"
+  const dayMatch = titleClean.match(/^DAY\s+(\d+)\s*[—–-]?\s*(.*)/i)
+  const dayNum = dayMatch ? parseInt(dayMatch[1]) : 1
+  const dayFocus = dayMatch ? dayMatch[2].trim() : titleClean
+
+  const dayColors = {
+    1: { bg: '#1e3a5f', note: '#60a5fa' },
+    2: { bg: '#1e4a2f', note: '#4ade80' },
+    3: { bg: '#3a1e5f', note: '#a78bfa' },
+    4: { bg: '#5f3a1e', note: '#fb923c' },
+  }
+  const theme = dayColors[dayNum] || dayColors[1]
+
+  let html = `<div class="day-card">`
+  html += `<div class="day-header" style="background:${theme.bg}">`
+  html += `<span class="day-header-title">Day ${dayNum}</span>`
+  if (dayFocus) html += `<span class="day-header-focus">${escHtml(dayFocus)}</span>`
+  html += `</div>`
+  html += `<div class="day-body">`
+
+  // Process body: find speed/COD block, warmup additions, then the table
+  const bodyLines = lines.slice(1)
+
+  // Collect bullet list sections that appear before the table
+  let speedLines = []
+  let warmupAddLines = []
+  let inSpeedBlock = false
+  let inWarmupBlock = false
+  let tableStartIdx = -1
+  let tableEndIdx = -1
+  let tableLines = []
+
+  // Find the markdown table
+  let inTable = false
+  bodyLines.forEach((line, idx) => {
+    if (line.trim().startsWith('|')) {
+      if (!inTable) { inTable = true; tableStartIdx = idx }
+      tableLines.push(line)
+      tableEndIdx = idx
+    } else {
+      if (inTable) inTable = false
+    }
+  })
+
+  // Process lines before the table
+  bodyLines.slice(0, tableStartIdx > 0 ? tableStartIdx : bodyLines.length).forEach(line => {
+    const t = line.trim()
+    if (!t) { inSpeedBlock = false; inWarmupBlock = false; return }
+    if (/\*\*Speed\s*\/\s*COD\*\*|Speed\s*\/\s*COD|Speed &amp; COD/i.test(t)) {
+      inSpeedBlock = true; inWarmupBlock = false; return
+    }
+    if (/\*\*Day[- ]specific warmup|Day[- ]specific warmup/i.test(t)) {
+      inWarmupBlock = true; inSpeedBlock = false; return
+    }
+    if (inSpeedBlock && (t.startsWith('-') || t.startsWith('*'))) {
+      speedLines.push(t.replace(/^[-*]\s*/, ''))
+    } else if (inWarmupBlock && (t.startsWith('-') || t.startsWith('*'))) {
+      warmupAddLines.push(t.replace(/^[-*]\s*/, ''))
+    }
+  })
+
+  // Render speed block
+  if (speedLines.length) {
+    html += `<div class="speed-block">`
+    html += `<div class="speed-block-title"><span>&#9889;</span> Speed / COD</div>`
+    html += `<ul>`
+    speedLines.forEach(l => { html += `<li>${escHtml(l)}</li>` })
+    html += `</ul></div>`
+  }
+
+  // Render warmup additions
+  if (warmupAddLines.length) {
+    html += `<div class="warmup-additions">`
+    html += `<div class="warmup-additions-title">Day Warmup Additions</div>`
+    html += `<ul>`
+    warmupAddLines.forEach(l => { html += `<li>${escHtml(l)}</li>` })
+    html += `</ul></div>`
+  }
+
+  // Render table
+  if (tableLines.length >= 3) {
+    const parsed = parseMarkdownTable(tableLines.join('\n'))
+    if (parsed) {
+      html += renderExerciseTable(parsed, theme.note)
+    }
+  }
+
+  html += `</div></div>`
+  return html
+}
+
+function renderExerciseTable(parsed, noteColor) {
+  const { headers, rows } = parsed
+
+  // Determine column indices by header name
+  const hIdx = {}
+  headers.forEach((h, i) => {
+    const norm = h.toUpperCase().replace(/\s+/g, ' ').trim()
+    hIdx[norm] = i
+  })
+
+  // Build week column groups: find WK1–WK4 columns
+  const wkGroups = []
+  for (let w = 1; w <= 4; w++) {
+    const pct   = findColIdx(headers, [`WK${w} %`, `WK${w}%`])
+    const sets  = findColIdx(headers, [`WK${w} SETS×REPS`, `WK${w} SETS\u00D7REPS`, `WK${w} SETS*REPS`, `WK${w}SETS×REPS`])
+    const wt    = findColIdx(headers, [`WK${w} WT NOTE`, `WK${w} WT`, `WK${w}WT NOTE`])
+    wkGroups.push({ w, pct, sets, wt })
+  }
+
+  const numIdx = findColIdx(headers, ['#', 'NUM', 'NO'])
+  const exIdx  = findColIdx(headers, ['EXERCISE', 'EXERCISE NAME'])
+  const noteIdx= findColIdx(headers, ['COACHING NOTE', 'NOTE', 'COACHING NOTES'])
+  const wkBg = ['wk1-bg', 'wk2-bg', 'wk3-bg', 'wk4-bg']
+
+  let html = `<div class="ex-table-wrap"><table class="ex-table"><thead><tr>`
+
+  // Header: # | EXERCISE | [WK1: %, SETS, WT] x4 | COACHING NOTE
+  html += `<th style="width:32px">#</th>`
+  html += `<th class="ex-col" style="min-width:130px">Exercise</th>`
+  wkGroups.forEach(({ w }) => {
+    const bg = wkBg[w - 1]
+    html += `<th class="${bg}" style="width:32px">W${w}%</th>`
+    html += `<th class="${bg}" style="width:68px">W${w} Sets</th>`
+    html += `<th class="${bg}" style="width:60px">W${w} Wt</th>`
+  })
+  html += `<th style="min-width:90px;text-align:right">Coaching Note</th>`
+  html += `</tr></thead><tbody>`
+
+  rows.forEach(row => {
+    if (!row.length) return
+    const numVal = numIdx >= 0 ? (row[numIdx] || '') : (row[0] || '')
+    const exVal  = exIdx  >= 0 ? (row[exIdx]  || '') : (row[1] || '')
+    const noteVal= noteIdx >= 0 ? (row[noteIdx] || '') : (row[row.length - 1] || '')
+
+    html += `<tr>`
+    html += `<td style="text-align:center">${renderNumBadge(numVal)}</td>`
+    html += `<td class="ex-col">${escHtml(exVal)}</td>`
+
+    wkGroups.forEach(({ w, pct, sets, wt }) => {
+      const bg = wkBg[w - 1]
+      const pctVal  = pct  >= 0 ? (row[pct]  || '—') : '—'
+      const setsVal = sets >= 0 ? (row[sets] || '') : ''
+      const wtVal   = wt   >= 0 ? (row[wt]   || '') : ''
+
+      html += `<td class="pct-cell ${bg}">${escHtml(pctVal)}</td>`
+      html += `<td class="${bg}"><span class="setsreps">${escHtml(setsVal)}</span></td>`
+      html += `<td class="${bg}"><span class="wt-note${/ADD|add if/i.test(wtVal) ? ' add-note' : ''}">${escHtml(wtVal)}</span></td>`
+    })
+
+    html += `<td class="coaching-note" style="color:${noteColor}">${escHtml(noteVal)}</td>`
+    html += `</tr>`
+  })
+
+  html += `</tbody></table></div>`
+  return html
+}
+
+function findColIdx(headers, candidates) {
+  for (const candidate of candidates) {
+    const norm = candidate.toUpperCase().replace(/\s+/g, ' ').trim()
+    const idx = headers.findIndex(h => h.toUpperCase().replace(/\s+/g, ' ').trim() === norm)
+    if (idx >= 0) return idx
+  }
+  return -1
+}
+
+function renderNumBadge(val) {
+  if (!val) return ''
+  const v = val.trim()
+  // Check superset group
+  if (/^3[A-C]$/i.test(v)) return `<span class="num-badge badge-amber">${escHtml(v)}</span>`
+  if (/^4[A-C]$/i.test(v)) return `<span class="num-badge badge-green">${escHtml(v)}</span>`
+  if (/^[12]$/.test(v))    return `<span class="num-badge badge-primary">${escHtml(v)}</span>`
+  return `<span class="num-badge badge-default">${escHtml(v)}</span>`
+}
+
+function renderReasoning(parsed) {
+  const text = parsed.reasoning || ''
+  if (!text) return '<p style="color:#9ca3af;font-size:0.82rem;padding:16px">No reasoning available.</p>'
+
+  // Split on ## RED FLAGS or ## RED FLAGS / CAVEATS
+  const flagsMatch = text.search(/^## RED FLAGS/im)
+  const reasoningText = flagsMatch > 0 ? text.slice(0, flagsMatch).trim() : text
+  const flagsText = flagsMatch > 0 ? text.slice(flagsMatch).trim() : ''
+
+  // Clean up the reasoning header line
+  const reasoningBody = reasoningText.replace(/^## REASONING\s*/im, '').trim()
+
+  let html = ''
+
+  // Reasoning card
+  html += `<div class="reasoning-card">`
+  html += `<h3>Reasoning</h3>`
+  const reasoningParas = reasoningBody.split(/\n\n+/).filter(p => p.trim())
+  reasoningParas.forEach(para => {
+    const cleaned = para.trim().replace(/\n/g, ' ')
+    if (cleaned) html += `<p>${escHtml(cleaned)}</p>`
+  })
+  html += `</div>`
+
+  // Red flags card
+  if (flagsText) {
+    html += `<div class="red-flags-card">`
+    html += `<h3>Red Flags / Caveats</h3>`
+    const flagLines = flagsText.replace(/^## RED FLAGS[^\n]*/im, '').trim().split('\n')
+
+    let hasContent = false
+    let bullets = []
+    flagLines.forEach(line => {
+      const t = line.trim()
+      if (!t) return
+      if (t.startsWith('-') || t.startsWith('*') || t.startsWith('•')) {
+        bullets.push(t.replace(/^[-*•]\s*/, ''))
+      } else if (t && !t.startsWith('#')) {
+        bullets.push(t)
+      }
+    })
+
+    if (bullets.length === 0 || bullets.every(b => /no significant red flags/i.test(b))) {
+      html += `<span class="no-flags">&#10003; No significant red flags for this profile</span>`
+    } else {
+      bullets.forEach(b => {
+        if (b) { html += `<div class="flag-item">${escHtml(b)}</div>`; hasContent = true }
+      })
+      if (!hasContent) {
+        html += `<span class="no-flags">&#10003; No significant red flags for this profile</span>`
+      }
+    }
+
+    html += `</div>`
+  }
+
+  return html
+}
+
+function escHtml(str) {
+  if (!str) return ''
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 </script>
 </body>
